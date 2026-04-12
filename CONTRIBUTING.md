@@ -1,56 +1,33 @@
 # Contributing to GreenRoute AI
 
-Thank you for considering contributing to GreenRoute AI! This guide will help you get started.
-
-## Code of Conduct
-
-Be respectful. Be constructive. Focus on the problem, not the person.
+Thank you for your interest in contributing to GreenRoute AI! We are building an autonomous, agentic logistics optimization platform to help reduce urban delivery CO₂ emissions.
 
 ## Getting Started
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/greenroute-ai`
-3. Install dependencies: `npm install`
-4. Copy env vars: `cp .env.example .env` and fill in your keys
-5. Start the stack: `docker-compose up`
+1. **Fork the repository** on GitHub.
+2. **Clone your fork** locally: `git clone https://github.com/manojmallick/greenroute-ai.git`
+3. **Install dependencies**: This is an npm workspace monorepo. Run `npm install` at the root.
+4. **Copy the Environment File**: `cp .env.example .env` and fill out your local API keys (Google Maps, Gemini).
+5. **Start Local Environment**: Run `docker-compose up` to spin up the local Redis and Postgres instances, along with the agent services.
 
-## Commit Convention
+## Development Workflow
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+1. Create a descriptively named branch: `git checkout -b feature/gnn-heuristic` or `git checkout -b fix/astar-infinite-loop`.
+2. Ensure you are following **Conventional Commits** for your commit messages (e.g., `feat: add graph neural net heuristic` or `fix: resolve crash in API gateway`).
+3. Run `npm run lint` and `npm test` before pushing.
+4. Push your branch to GitHub and open a Pull Request against `main`.
 
-```
-feat(router): add GNN heuristic fallback
-fix(monitor): handle API timeout gracefully
-docs(readme): add architecture diagram
-test(astar): add edge case for unreachable nodes
-chore(ci): add lint step to GitHub Actions
-```
+## Pull Request Guidelines
 
-Types: `feat` · `fix` · `docs` · `test` · `chore` · `refactor` · `perf`
+- All PRs must pass the GitHub Actions CI pipeline (Lint + Test).
+- Include a clear description of what the PR accomplishes.
+- If it fixes an open issue, link it using `Fixes #123`.
+- Any changes to core algorithms (`astar.js`, `dijkstra.js`) MUST include updated or new unit tests to prevent pathfinding regressions.
 
-## Branch Strategy
+## Architecture Guidelines
 
-- `main` — production, protected (requires PR + CI pass)
-- `feat/<name>` — feature branches
-- `fix/<name>` — bug fix branches
+- GreenRoute AI heavily relies on a multi-agent orchestrated pattern. New functionality should ideally not bloat the API Gateway.
+- Determine if your feature belongs in the **Router Agent** (pathfinding), **Monitor Agent** (data polling & anomaly detection), or **Replanner Agent** (decision making / LLM interaction).
+- All agent intercommunication MUST occur over the Redis pub/sub channels, documented in `CLAUDE.md`.
 
-## Pull Request Process
-
-1. Create a feature branch from `main`
-2. Write tests for new functionality
-3. Ensure `npm test` passes
-4. Open a PR — fill in the template
-5. Request review (or self-review for solo dev)
-
-## Algorithm Contributions
-
-If you're contributing to the routing algorithms:
-
-- All new algorithms go in `packages/router-agent/src/algorithms/`
-- Must include unit tests in `__tests__/`
-- Include JSDoc with time/space complexity
-- Benchmark against existing A\* for comparison
-
-## Questions?
-
-Open an issue or reach out via [LinkedIn](https://www.linkedin.com/in/manoj-mallick-9487413a).
+Thank you for helping us make city logistics greener!

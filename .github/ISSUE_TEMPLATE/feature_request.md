@@ -1,27 +1,20 @@
 ---
-name: Feature Request
-about: Suggest an improvement or new feature
+name: Feature request
+about: Suggest an idea for this project
 title: '[FEAT] '
 labels: enhancement
 assignees: ''
+
 ---
 
-## Problem Statement
-What problem does this feature solve? Why do you need it?
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-## Proposed Solution
-Describe the feature you'd like. Include any implementation ideas.
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen. Are you suggesting a new Agent, a new optimization objective, or a new UI component?
 
-## Alternatives Considered
-Any other approaches you've considered?
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
 
-## Judging Criteria Impact
-Which AlgoFest judging criteria does this improve?
-- [ ] Innovation & Creativity (25%)
-- [ ] Technical Complexity (25%)
-- [ ] Practical Impact (20%)
-- [ ] Design & UX (15%)
-- [ ] Presentation & Demo (15%)
-
-## Additional Context
-Any other relevant information, screenshots, or references.
+**Additional context**
+Add any other context or screenshots about the feature request here.

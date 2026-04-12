@@ -13,7 +13,7 @@
 
 The platform is deployed globally on Google Cloud Run. 
 
-👉 **[View Live Dashboard](https://greenroute-frontend-xxx-ew.a.run.app)**  
+👉 **[View Live Dashboard](https://greenroute-frontend-j6pe6wobrq-ez.a.run.app)**  
 *(Requires backend instances to be awake. Ping `/api/health` if the map is empty).*
 
 ![GreenRoute AI Dashboard Preview](dashboard_screenshot.png)
@@ -38,7 +38,7 @@ Three specialized AI agents (**Router**, **Monitor**, **Replanner**) work togeth
 ## Quick start
 
 ```bash
-git clone https://github.com/your-username/greenroute-ai
+git clone https://github.com/manojmallick/greenroute-ai
 cd greenroute-ai
 cp .env.example .env   # fill in your API keys
 npm install
