@@ -121,6 +121,15 @@ if (require.main === module) {
     console.log('║  GreenRoute AI — Router Agent          ║');
     console.log('╚════════════════════════════════════════╝');
 
+    // ── Cloud Run Health Check (Start Immediately) ───────────────────────────
+    const http = require('http');
+    const port = process.env.PORT || 8080;
+    const server = http.createServer((req, res) => {
+      res.writeHead(200);
+      res.end('OK');
+    });
+    server.listen(port, () => console.log(`[router-agent] Health check listening on port ${port}`));
+
     const graph = getGraph();
     const fleet = fs.existsSync(FLEET_PATH)
       ? JSON.parse(fs.readFileSync(FLEET_PATH, 'utf8'))
@@ -164,15 +173,6 @@ if (require.main === module) {
 
     console.log('[router-agent] ✅ Subscribed to replan-instruction channel');
     console.log('[router-agent] Waiting for events from Replanner Agent...');
-
-    // ── Cloud Run Health Check ───────────────────────────────────────────────
-    const http = require('http');
-    const port = process.env.PORT || 8080;
-    const server = http.createServer((req, res) => {
-      res.writeHead(200);
-      res.end('OK');
-    });
-    server.listen(port, () => console.log(`[router-agent] Health check listening on port ${port}`));
 
     const shutdown = async () => {
       console.log('\n[router-agent] Shutting down...');

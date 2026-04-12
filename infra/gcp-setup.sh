@@ -61,12 +61,16 @@ gcloud iam workload-identity-pools create $POOL_NAME \
   --location=global \
   --display-name="GitHub Actions Pool" || echo "(already exists)"
 
+# Clean GITHUB_REPO just in case a full URL was passed
+CLEAN_REPO=$(echo "$GITHUB_REPO" | sed -e 's|https://github.com/||' -e 's|\.git$||')
+
 gcloud iam workload-identity-pools providers create-oidc $PROVIDER_NAME \
   --project=$PROJECT_ID \
   --location=global \
   --workload-identity-pool=$POOL_NAME \
   --display-name="GitHub Actions Provider" \
   --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository == '$CLEAN_REPO'" \
   --issuer-uri="https://token.actions.githubusercontent.com" || echo "(already exists)"
 
 POOL_ID=$(gcloud iam workload-identity-pools describe $POOL_NAME \
@@ -75,7 +79,7 @@ POOL_ID=$(gcloud iam workload-identity-pools describe $POOL_NAME \
 gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
   --project=$PROJECT_ID \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/$POOL_ID/attribute.repository/$GITHUB_REPO"
+  --member="principalSet://iam.googleapis.com/$POOL_ID/attribute.repository/$CLEAN_REPO"
 
 PROVIDER_ID=$(gcloud iam workload-identity-pools providers describe $PROVIDER_NAME \
   --project=$PROJECT_ID --location=global \

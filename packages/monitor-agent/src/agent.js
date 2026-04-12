@@ -69,6 +69,15 @@ async function main() {
   console.log('║  GreenRoute AI — Monitor Agent         ║');
   console.log('╚════════════════════════════════════════╝');
 
+  // ── Cloud Run Health Check (Start Immediately) ───────────────────────────
+  const http = require('http');
+  const port = process.env.PORT || 8080;
+  const server = http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('OK');
+  });
+  server.listen(port, () => console.log(`[monitor-agent] Health check listening on port ${port}`));
+
   let redis;
   try {
     redis = new Redis(REDIS_URL, { lazyConnect: true, enableOfflineQueue: false });
@@ -146,15 +155,6 @@ async function main() {
 
   trafficMonitor.start();
   co2Monitor.start();
-
-  // ── Cloud Run Health Check ───────────────────────────────────────────────
-  const http = require('http');
-  const port = process.env.PORT || 8080;
-  const server = http.createServer((req, res) => {
-    res.writeHead(200);
-    res.end('OK');
-  });
-  server.listen(port, () => console.log(`[monitor-agent] Health check listening on port ${port}`));
 
   // Graceful shutdown
   const shutdown = async () => {
