@@ -90,10 +90,11 @@ function toRad(deg) {
  *
  * @param {{ lat: number, lon: number }} node
  * @param {{ lat: number, lon: number }} destination
+ * @param {number} [gnnScalar=1.0] — Multiplier supplied by Vertex AI to learn underlying grid topology
  * @returns {number}
  */
-function heuristic(node, destination) {
-  return W_DIST * haversineKm(node, destination);
+function heuristic(node, destination, gnnScalar = 1.0) {
+  return W_DIST * haversineKm(node, destination) * gnnScalar;
 }
 
 /**
@@ -135,10 +136,11 @@ function reconstructPath(cameFrom, current) {
  * @param {object} vehicle — { id, type, emissionFactorKgPerKm }
  * @param {object} [options]
  * @param {boolean} [options.recordTrace=false] — store expanded nodes for AlgoTrace UI
+ * @param {number} [options.gnnScalar=1.0] — GNN learned heuristic multiplier
  * @returns {{ nodes, edges, segments, trace? } | null}
  */
 function aStar(graph, origin, destination, vehicle, options = {}) {
-  const { recordTrace = false } = options;
+  const { recordTrace = false, gnnScalar = 1.0 } = options;
 
   /** @type {MinHeap<{ node: object, f: number }>} */
   const openSet = new MinHeap((a, b) => a.f - b.f);
@@ -156,7 +158,7 @@ function aStar(graph, origin, destination, vehicle, options = {}) {
   const trace = recordTrace ? [] : null;
 
   gScore.set(origin.id, 0);
-  openSet.push({ node: origin, f: heuristic(origin, destination) });
+  openSet.push({ node: origin, f: heuristic(origin, destination, gnnScalar) });
 
   let step = 0;
 
@@ -170,7 +172,7 @@ function aStar(graph, origin, destination, vehicle, options = {}) {
       trace.push({
         nodeId: current.id,
         g: gScore.get(current.id),
-        f: (gScore.get(current.id) ?? 0) + heuristic(current, destination),
+        f: (gScore.get(current.id) ?? 0) + heuristic(current, destination, gnnScalar),
         step: step++,
       });
     }
@@ -193,7 +195,7 @@ function aStar(graph, origin, destination, vehicle, options = {}) {
       if (tentativeG < (gScore.get(edge.to) ?? Infinity)) {
         cameFrom.set(edge.to, { node: current, edge: { ...edge, from: current.id } });
         gScore.set(edge.to, tentativeG);
-        const f = tentativeG + heuristic(neighborNode, destination);
+        const f = tentativeG + heuristic(neighborNode, destination, gnnScalar);
         openSet.push({ node: neighborNode, f });
       }
     }

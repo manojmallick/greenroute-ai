@@ -18,7 +18,7 @@ router.post('/route/optimize', async (req, res, next) => {
       });
     }
 
-    const result = optimizeRoute({ originId, destinationId, vehicle, trace });
+    const result = await optimizeRoute({ originId, destinationId, vehicle, trace });
 
     // Store trace so /api/algorithm/trace/:routeId can serve it
     const io = req.app.get('io');

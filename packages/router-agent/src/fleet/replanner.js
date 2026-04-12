@@ -13,6 +13,7 @@
 const { aStar } = require('../algorithms/astar');
 const { dijkstra } = require('../algorithms/dijkstra');
 const { routeCarbonCost, computeCo2Savings } = require('../algorithms/carbonPricing');
+const { initializeGNNHeuristic } = require('../gnn/heuristicClient');
 
 class FleetReplanner {
   /**
@@ -111,7 +112,8 @@ class FleetReplanner {
       type: constraints.preferElectric && vehicle.type === 'diesel_van' ? 'electric_van' : vehicle.type,
     };
 
-    let result = aStar(this._graph, origin, destination, effectiveVehicle, { recordTrace: true });
+    const gnnScalar = await initializeGNNHeuristic(origin, destination);
+    let result = aStar(this._graph, origin, destination, effectiveVehicle, { recordTrace: true, gnnScalar });
     let algorithm = 'astar';
 
     if (!result) {

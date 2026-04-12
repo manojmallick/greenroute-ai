@@ -23,6 +23,7 @@ const { FleetReplanner } = require('./fleet/replanner');
 const { aStar } = require('./algorithms/astar');
 const { dijkstra } = require('./algorithms/dijkstra');
 const { routeCarbonCost, computeCo2Savings } = require('./algorithms/carbonPricing');
+const { initializeGNNHeuristic } = require('./gnn/heuristicClient');
 
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const GRAPH_CACHE_PATH = path.join(process.cwd(), 'data', 'graph-cache', 'graph.json');
@@ -67,7 +68,7 @@ function getGraph() {
 }
 
 // ─── Public API (used by api-gateway REST route) ───────────────────────────────
-function optimizeRoute({ originId, destinationId, vehicle, trace = false }) {
+async function optimizeRoute({ originId, destinationId, vehicle, trace = false }) {
   const graph = getGraph();
   const origin = graph.getNode(originId);
   const destination = graph.getNode(destinationId);
@@ -75,7 +76,10 @@ function optimizeRoute({ originId, destinationId, vehicle, trace = false }) {
   if (!origin) throw new Error(`Origin stop not found: ${originId}`);
   if (!destination) throw new Error(`Destination stop not found: ${destinationId}`);
 
-  let result = aStar(graph, origin, destination, vehicle, { recordTrace: trace });
+  // Fetch Vertex AI learned GNN scalar (returns 1.21 fallback for demo)
+  const gnnScalar = await initializeGNNHeuristic(origin, destination);
+
+  let result = aStar(graph, origin, destination, vehicle, { recordTrace: trace, gnnScalar });
   let algorithm = 'astar';
 
   if (!result) {

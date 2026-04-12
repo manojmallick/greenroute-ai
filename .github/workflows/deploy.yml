@@ -82,6 +82,7 @@ jobs:
             --region=$REGION --platform=managed \
             --allow-unauthenticated --port=3000 \
             --memory=512Mi --min-instances=1 \
+            --network=default \
             --set-env-vars="NODE_ENV=production,REDIS_URL=${{ secrets.REDIS_URL }}"
 
       - name: Deploy Frontend
@@ -97,18 +98,21 @@ jobs:
             --image=$GAR_REGISTRY/$PROJECT_ID/greenroute/router-agent:${{ github.sha }} \
             --region=$REGION --platform=managed \
             --no-allow-unauthenticated --port=3001 --memory=1Gi \
+            --network=default \
             --set-env-vars="NODE_ENV=production,REDIS_URL=${{ secrets.REDIS_URL }}" &
 
           gcloud run deploy greenroute-monitor-agent \
             --image=$GAR_REGISTRY/$PROJECT_ID/greenroute/monitor-agent:${{ github.sha }} \
             --region=$REGION --platform=managed \
             --no-allow-unauthenticated --port=3002 --memory=512Mi \
+            --network=default \
             --set-env-vars="NODE_ENV=production,REDIS_URL=${{ secrets.REDIS_URL }},GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" &
 
           gcloud run deploy greenroute-replanner-agent \
             --image=$GAR_REGISTRY/$PROJECT_ID/greenroute/replanner-agent:${{ github.sha }} \
             --region=$REGION --platform=managed \
             --no-allow-unauthenticated --port=3003 --memory=512Mi \
+            --network=default \
             --set-env-vars="NODE_ENV=production,REDIS_URL=${{ secrets.REDIS_URL }},GOOGLE_GEMINI_API_KEY=${{ secrets.GOOGLE_GEMINI_API_KEY }}" &
           wait
 
