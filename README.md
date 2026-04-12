@@ -10,6 +10,11 @@
 [![AlgoFest 2026](https://img.shields.io/badge/hackathon-AlgoFest%202026-purple)](https://algofest-hackathon26.devpost.com)
 [![CI Pipeline](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![GitHub stars](https://img.shields.io/github/stars/manojmallick/greenroute-ai?style=social)](https://github.com/manojmallick/greenroute-ai/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/manojmallick/greenroute-ai?style=social)](https://github.com/manojmallick/greenroute-ai/network/members)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Manoj%20Mallick-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/manoj-mallick-9487413a)
+[![Last Commit](https://img.shields.io/github/last-commit/manojmallick/greenroute-ai)](https://github.com/manojmallick/greenroute-ai/commits/main)
+[![Issues](https://img.shields.io/github/issues/manojmallick/greenroute-ai)](https://github.com/manojmallick/greenroute-ai/issues)
 
 ## 🌟 Live Demo
 
@@ -93,8 +98,8 @@ graph TD
         Router["Router Agent (A* + GraphStore)"] ::: agent
     end
 
-    Redis[("Redis Pub/Sub (Event Bus)")] ::: data
-    Postgres[("PostgreSQL (Telemetry)")] ::: data
+    Redis["Redis Pub/Sub (Event Bus)"] ::: data
+    Postgres["PostgreSQL (Telemetry)"] ::: data
 
     Maps[Google Maps API] ::: ext
     Gemini[Google Gemini API] ::: ext
