@@ -148,10 +148,14 @@ router.post('/fleet/replan', async (req, res, next) => {
       timestamp: anomaly.detectedAt,
     }));
 
+    const proto = req.headers['x-forwarded-proto'] ?? req.protocol;
+    const wsProto = proto === 'https' ? 'wss' : 'ws';
+    const host = req.headers['x-forwarded-host'] ?? req.headers.host;
+
     res.json({
       message: 'Replan triggered — watch Socket.IO for replan:started and route:updated events',
       anomaly,
-      hint: 'Connect to ws://localhost:3000 and listen for replan:started, route:updated, replan:complete',
+      hint: `Connect to ${wsProto}://${host} and listen for replan:started, route:updated, replan:complete`,
     });
   } catch (err) {
     next(err);
