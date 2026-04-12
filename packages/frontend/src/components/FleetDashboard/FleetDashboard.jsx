@@ -36,8 +36,8 @@ function VehicleCard({ vehicle, route, isSelected, onClick }) {
           )}
         </div>
       ) : (
-        <div className="vehicle-co2" style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem' }}>
-          — no route yet
+        <div className="vehicle-co2" style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', letterSpacing: '0.01em' }}>
+          — Standard Baseline
         </div>
       )}
 

@@ -124,11 +124,14 @@ router.post('/fleet/replan', async (req, res, next) => {
       return res.status(503).json({ error: 'Redis not connected — cannot trigger agent replan' });
     }
 
-    const { reason = 'manual_trigger', segment = 'AMS-CS→AMS-DAM' } = req.body;
+    const { reason = 'manual_trigger', segment } = req.body;
+
+    // Use specific segment if provided, else default to demo segment
+    const targetSegment = segment || 'AMS-CS→AMS-DAM';
 
     // Publish a simulated anomaly to trigger the full chain
     const anomaly = {
-      segmentKey: segment,
+      segmentKey: targetSegment,
       observedSpeedKmh: 3,
       expectedSpeedKmh: 28,
       freeFlowSpeedKmh: 30,

@@ -11,7 +11,11 @@ export default function ReplanBanner({ replanState }) {
       {isStarted && (
         <span>
           🔄 Replanning {replanState.vehiclesAffected} vehicle{replanState.vehiclesAffected !== 1 ? 's' : ''}
-          {replanState.reason && ` — traffic on ${replanState.reason}`}
+          {replanState.rationale ? (
+            <div style={{ fontSize: '0.72rem', fontStyle: 'italic', marginTop: 4, opacity: 0.9 }}>
+              Gemini: "{replanState.rationale}"
+            </div>
+          ) : replanState.reason && ` — traffic on ${replanState.reason}`}
         </span>
       )}
       {isComplete && (

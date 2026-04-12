@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSocket } from './useSocket';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -44,6 +44,7 @@ export function useFleet() {
         reductionPercent: data.reductionPercent ?? 0,
         algorithm: data.algorithm ?? 'astar',
         vehicleType: data.vehicleType ?? 'diesel_van',
+        segments: data.segments ?? [],
         updatedAt: Date.now(),
       },
     }));
@@ -86,6 +87,33 @@ export function useFleet() {
     'replan:complete': handleReplanComplete,
     'co2:tick':        handleCo2Tick,
   });
+  
+  // Auto-optimize first 3 vehicles on load to show immediate savings
+  useEffect(() => {
+    if (!connected) return;
+    
+    const targets = DEMO_FLEET.slice(0, 3);
+    const runAutoSweep = async () => {
+      // Staggered delay for visual map effect
+      const wait = (ms) => new Promise(r => setTimeout(r, ms));
+      const dests = ['AMS-ZUI', 'AMS-DAM', 'AMS-LEI'];
+      
+      for (let i = 0; i < targets.length; i++) {
+        const v = targets[i];
+        if (routes[v.id]) continue; // don't re-optimize if already done
+        
+        try {
+          await optimizeRoute('AMS-CS', dests[i], v.id, v.type);
+          await wait(1200);
+        } catch (err) {
+          console.warn('Auto-optimization failed:', err);
+        }
+      }
+    };
+    
+    runAutoSweep();
+  }, [connected, optimizeRoute]); // removed routes to avoid loop
+
 
   /**
    * Trigger a route optimization via REST API and update trace.
@@ -113,6 +141,7 @@ export function useFleet() {
         totalCo2Kg: data.totalCo2Kg ?? 0,
         reductionPercent: data.co2Savings?.reductionPercent ?? 0,
         algorithm: data.algorithm ?? 'astar',
+        segments: data.segments ?? [],
         vehicleType,
         updatedAt: Date.now(),
       },
@@ -125,11 +154,11 @@ export function useFleet() {
   /**
    * Trigger a full fleet replan via the API.
    */
-  const triggerReplan = useCallback(async () => {
+  const triggerReplan = useCallback(async (segment) => {
     const res = await fetch(`${API_URL}/api/fleet/replan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason: 'manual_demo' }),
+      body: JSON.stringify({ reason: 'manual_demo', segment }),
     });
     return res.json();
   }, []);

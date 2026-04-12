@@ -166,6 +166,7 @@ if (require.main === module) {
           reason: instruction.anomaly?.segmentKey,
           vehiclesAffected: instruction.vehicleIds?.length,
           replanIndex: instruction.replanIndex,
+          rationale: instruction.decision?.reasoning,
         }));
 
         await fleetReplanner.executeReplan(instruction);

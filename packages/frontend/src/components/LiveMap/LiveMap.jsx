@@ -20,12 +20,12 @@ const ROUTE_COLORS = [
   '#34d399', '#f87171', '#38bdf8', '#fbbf24',
 ];
 
-export default function LiveMap({ vehicles, routes, selectedVehicleId, onVehicleClick }) {
+export default function LiveMap({ vehicles, routes, selectedVehicleId, onVehicleClick, onSegmentClick }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
-  const polylinesRef = useRef({});
-
+  const featureGroupsRef = useRef({}); // vehicleId -> L.FeatureGroup (segments)
+  
   // Initialise map once
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
@@ -96,47 +96,75 @@ export default function LiveMap({ vehicles, routes, selectedVehicleId, onVehicle
     });
   }, [vehicles, selectedVehicleId, onVehicleClick]);
 
-  // Sync route polylines
+  // Sync route segments
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const routeIds = new Set(Object.keys(routes));
 
-    // Remove stale polylines
-    for (const id of Object.keys(polylinesRef.current)) {
+    // Remove stale feature groups
+    for (const id of Object.keys(featureGroupsRef.current)) {
       if (!routeIds.has(id)) {
-        polylinesRef.current[id].remove();
-        delete polylinesRef.current[id];
+        featureGroupsRef.current[id].remove();
+        delete featureGroupsRef.current[id];
       }
     }
 
     Object.entries(routes).forEach(([vehicleId, route], i) => {
       if (!route.stops || route.stops.length < 2) return;
-      const positions = route.stops.map((s) => [s.lat, s.lon]);
-      const color = ROUTE_COLORS[i % ROUTE_COLORS.length];
+      
       const isSelected = vehicleId === selectedVehicleId;
-
-      if (polylinesRef.current[vehicleId]) {
-        polylinesRef.current[vehicleId].setLatLngs(positions);
-        polylinesRef.current[vehicleId].setStyle({
-          color,
-          weight: isSelected ? 4 : 2.5,
-          opacity: isSelected ? 0.95 : 0.5,
-          dashArray: isSelected ? '' : '6 4',
-        });
+      const color = ROUTE_COLORS[i % ROUTE_COLORS.length];
+      
+      // Clear existing group or create new one
+      if (featureGroupsRef.current[vehicleId]) {
+        featureGroupsRef.current[vehicleId].clearLayers();
       } else {
-        const line = L.polyline(positions, {
+        featureGroupsRef.current[vehicleId] = L.featureGroup().addTo(map);
+      }
+      
+      const group = featureGroupsRef.current[vehicleId];
+
+      // Create interactive segments
+      for (let j = 0; j < route.stops.length - 1; j++) {
+        const start = route.stops[j];
+        const end = route.stops[j+1];
+        const segmentKey = `${start.id}→${end.id}`;
+
+        const segment = L.polyline([[start.lat, start.lon], [end.lat, end.lon]], {
           color,
           weight: isSelected ? 4 : 2.5,
-          opacity: isSelected ? 0.95 : 0.5,
+          opacity: isSelected ? 0.95 : 0.4,
           dashArray: isSelected ? '' : '6 4',
-        }).addTo(map);
-        line.bindTooltip(`${vehicleId} — ${route.totalCo2Kg?.toFixed(3) ?? '?'}kg CO₂`);
-        polylinesRef.current[vehicleId] = line;
+          interactive: true,
+          cursor: 'pointer',
+        }).addTo(group);
+
+        segment.on('mouseover', (e) => {
+          if (!isSelected) e.target.setStyle({ weight: 5, opacity: 0.8 });
+        });
+        segment.on('mouseout', (e) => {
+          if (!isSelected) e.target.setStyle({ weight: 2.5, opacity: 0.4 });
+        });
+
+        segment.on('click', (e) => {
+          L.DomEvent.stopPropagation(e);
+          onSegmentClick?.(segmentKey);
+          
+          // Visual feedback for "breaking" the segment
+          segment.setStyle({ color: '#ef4444', weight: 8, dashArray: '' });
+          setTimeout(() => {
+            if (featureGroupsRef.current[vehicleId]) {
+              segment.setStyle({ color, weight: isSelected ? 4 : 2.5 });
+            }
+          }, 2000);
+        });
+
+        segment.bindTooltip(`Segment: ${segmentKey}<br/>Click to simulate traffic spike`, { sticky: true });
       }
     });
-  }, [routes, selectedVehicleId]);
+  }, [routes, selectedVehicleId, onSegmentClick]);
 
   // Fly to selected vehicle
   useEffect(() => {

@@ -7,6 +7,7 @@ import FleetDashboard from './components/FleetDashboard/FleetDashboard';
 import AlgoTrace from './components/AlgoTrace/AlgoTrace';
 import BeforeAfter from './components/BeforeAfter/BeforeAfter';
 import ReplanBanner from './components/ReplanBanner/ReplanBanner';
+import Leaderboard from './components/Leaderboard/Leaderboard';
 import { useFleet } from './hooks/useFleet';
 
 const DEMO_STOPS = [
@@ -117,6 +118,7 @@ export default function App() {
         routes={routes}
         selectedVehicleId={selectedVehicleId}
         onVehicleClick={setSelectedVehicleId}
+        onSegmentClick={triggerReplan}
       />
 
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
@@ -144,22 +146,26 @@ export default function App() {
           onSelect={setSelectedVehicleId}
         />
 
+        {/* Eco-Leaderboard */}
+        <Leaderboard routes={routes} />
+
         {/* Before/After comparison */}
         <BeforeAfter selectedRoute={selectedRoute} vehicleId={selectedVehicleId} />
 
         {/* AlgoTrace */}
         <AlgoTrace trace={lastTrace?.trace} algorithm={selectedRoute?.algorithm} />
 
-        {/* Demo hint */}
         <div style={{
           fontSize: '0.65rem',
           color: 'var(--color-text-muted)',
           textAlign: 'center',
-          padding: '4px 0 8px',
+          padding: '8px 0 8px',
           lineHeight: 1.6,
         }}>
-          Select a vehicle → Optimize Route<br />
-          or Simulate Spike to trigger full agent pipeline
+          <strong>Demo Guide</strong><br />
+          1. Select vehicle → Optimize Route<br />
+          2. Click segments on map to trigger AI Agents<br />
+          3. Watch Eco-Leaderboard for savings
         </div>
       </aside>
     </div>

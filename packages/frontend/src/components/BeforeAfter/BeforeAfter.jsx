@@ -55,6 +55,15 @@ export default function BeforeAfter({ selectedRoute, vehicleId }) {
       </div>
 
       <div style={{
+        marginTop: 12, padding: '8px 12px', background: 'rgba(52, 211, 153, 0.05)', borderRadius: 8,
+        fontSize: '0.65rem', border: '1px solid rgba(52, 211, 153, 0.1)',
+      }}>
+        <strong style={{ color: 'var(--color-green-400)' }}>💡 Deep Insight: </strong>
+        Standard GPS (Dijkstra) ignores engine efficiency. Our AI uses **Carbon Shadow Pricing** ($85/tonne CO₂)
+        to select paths that balance 3 objectives: time, distance, and emissions.
+      </div>
+
+      <div style={{
         marginTop: 10, fontSize: '0.65rem', color: 'var(--color-text-muted)',
         display: 'flex', gap: 12,
       }}>
