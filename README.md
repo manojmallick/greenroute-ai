@@ -8,6 +8,8 @@
 [![Google Cloud](https://img.shields.io/badge/cloud-GCP-4285F4)](https://cloud.google.com)
 [![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Pro-orange)](https://ai.google.dev)
 [![AlgoFest 2026](https://img.shields.io/badge/hackathon-AlgoFest%202026-purple)](https://algofest-hackathon26.devpost.com)
+[![CI Pipeline](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 
 ## 🌟 Live Demo
 
@@ -82,17 +84,17 @@ graph TD
     classDef ext fill:#1a202c,stroke:#f59e0b,stroke-width:1px,stroke-dasharray: 4 4,color:#e6fdf4
 
     %% Nodes
-    UI[Frontend Dashboard<br/>React + Vite] ::: frontend
-    Gateway[API Gateway<br/>Express + Socket.IO] ::: frontend
+    UI["Frontend Dashboard (React + Vite)"] ::: frontend
+    Gateway["API Gateway (Express + Socket.IO)"] ::: frontend
 
     subgraph Agents
-        Monitor[Monitor Agent<br/>Welford Z-score] ::: agent
-        Replanner[Replanner Agent<br/>Gemini 1.5 Pro] ::: agent
-        Router[Router Agent<br/>A* + GraphStore] ::: agent
+        Monitor["Monitor Agent (Welford Z-score)"] ::: agent
+        Replanner["Replanner Agent (Gemini 1.5 Pro)"] ::: agent
+        Router["Router Agent (A* + GraphStore)"] ::: agent
     end
 
-    Redis[(Redis Pub/Sub<br/>Event Bus)] ::: data
-    Postgres[(PostgreSQL<br/>Telemetry)] ::: data
+    Redis[("Redis Pub/Sub (Event Bus)")] ::: data
+    Postgres[("PostgreSQL (Telemetry)")] ::: data
 
     Maps[Google Maps API] ::: ext
     Gemini[Google Gemini API] ::: ext
