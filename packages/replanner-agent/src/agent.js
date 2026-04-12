@@ -71,9 +71,19 @@ async function main() {
     console.log('[replanner-agent] Use scripts/simulate-traffic-spike.js to test manually');
   }
 
+  // ── Cloud Run Health Check ───────────────────────────────────────────────
+  const http = require('http');
+  const port = process.env.PORT || 8080;
+  const server = http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('OK');
+  });
+  server.listen(port, () => console.log(`[replanner-agent] Health check listening on port ${port}`));
+
   // Graceful shutdown
   const shutdown = async () => {
     console.log('\n[replanner-agent] Shutting down...');
+    server.close();
     if (redis) await redis.quit();
     if (subscriber) await subscriber.quit();
     process.exit(0);

@@ -147,9 +147,19 @@ async function main() {
   trafficMonitor.start();
   co2Monitor.start();
 
+  // ── Cloud Run Health Check ───────────────────────────────────────────────
+  const http = require('http');
+  const port = process.env.PORT || 8080;
+  const server = http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('OK');
+  });
+  server.listen(port, () => console.log(`[monitor-agent] Health check listening on port ${port}`));
+
   // Graceful shutdown
   const shutdown = async () => {
     console.log('\n[monitor-agent] Shutting down...');
+    server.close();
     trafficMonitor.stop();
     co2Monitor.stop();
     if (redis) await redis.quit();
@@ -159,6 +169,7 @@ async function main() {
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
 }
+
 
 main().catch((err) => {
   console.error('[monitor-agent] Fatal error:', err);
