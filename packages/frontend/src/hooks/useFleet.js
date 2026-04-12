@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSocket } from './useSocket';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Demo fleet from seed data — positions around Amsterdam
 const DEMO_FLEET = [
