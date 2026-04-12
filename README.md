@@ -89,20 +89,20 @@ graph TD
     classDef ext fill:#1a202c,stroke:#f59e0b,stroke-width:1px,stroke-dasharray: 4 4,color:#e6fdf4
 
     %% Nodes
-    UI["Frontend Dashboard (React + Vite)"] ::: frontend
-    Gateway["API Gateway (Express + Socket.IO)"] ::: frontend
+    UI["Frontend Dashboard (React + Vite)"]
+    Gateway["API Gateway (Express + Socket.IO)"]
 
     subgraph Agents
-        Monitor["Monitor Agent (Welford Z-score)"] ::: agent
-        Replanner["Replanner Agent (Gemini 1.5 Pro)"] ::: agent
-        Router["Router Agent (A* + GraphStore)"] ::: agent
+        Monitor["Monitor Agent (Welford Z-score)"]
+        Replanner["Replanner Agent (Gemini 1.5 Pro)"]
+        Router["Router Agent (A* + GraphStore)"]
     end
 
-    Redis["Redis Pub/Sub (Event Bus)"] ::: data
-    Postgres["PostgreSQL (Telemetry)"] ::: data
+    Redis["Redis Pub/Sub (Event Bus)"]
+    Postgres["PostgreSQL (Telemetry)"]
 
-    Maps[Google Maps API] ::: ext
-    Gemini[Google Gemini API] ::: ext
+    Maps["Google Maps API"]
+    Gemini["Google Gemini API"]
 
     %% Connections
     UI <-->|WebSocket| Gateway
@@ -118,6 +118,12 @@ graph TD
     Redis -->|Subscribe| Router
     Router -->|Publish ROUTE_UPDATED| Redis
     Router -.->|Persist| Postgres
+
+    %% Assign Classes
+    class UI,Gateway frontend
+    class Monitor,Replanner,Router agent
+    class Redis,Postgres data
+    class Maps,Gemini ext
 ```
 
 ## Technologies used
