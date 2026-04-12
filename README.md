@@ -46,6 +46,25 @@ Deployed globally on Google Cloud Run (europe-west4):
 
 ---
 
+## Screenshots
+
+### Full Dashboard — 8 vehicles active over Amsterdam
+![GreenRoute AI Dashboard](dashboard_screenshot.png)
+
+### Live Map — Vehicle markers with real-time positions
+![Live Map](demo_map.png)
+
+### Simulate Spike — Triggering an autonomous replan
+![Simulate Spike](demo_spike.png)
+
+### Replan Complete — Before/After routes + Gemini rationale
+![Replan Complete](demo_replan.png)
+
+### Fleet Panel — Per-vehicle CO₂ telemetry + vehicle types
+![Fleet Panel](demo_fleet.png)
+
+---
+
 ## What It Does
 
 GreenRoute AI is a **multi-agent autonomous system** that continuously optimizes city delivery routes to minimize CO₂ emissions, fuel costs, and delivery time — simultaneously, in real time, with no human in the loop.
