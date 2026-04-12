@@ -1,0 +1,27 @@
+{
+  "name": "greenroute-ai",
+  "version": "1.0.0",
+  "description": "Agentic city logistics optimizer — reduce urban delivery CO₂ by 30%",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=packages/api-gateway\" \"npm run dev --workspace=packages/router-agent\" \"npm run dev --workspace=packages/monitor-agent\" \"npm run dev --workspace=packages/replanner-agent\" \"npm run dev --workspace=packages/frontend\"",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint packages/*/src/**/*.js",
+    "seed": "node scripts/seed-db.js",
+    "build-graph": "node scripts/build-graph.js",
+    "test-route": "node scripts/test-route.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT"
+}

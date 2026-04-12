@@ -1,0 +1,20 @@
+{
+  "name": "@greenroute/api-gateway",
+  "version": "1.0.0",
+  "description": "Express 5 + Socket.IO API gateway for GreenRoute AI",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@greenroute/router-agent": "*",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.1",
+    "socket.io": "^4.7.5",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.3.1",
+    "ioredis": "^5.3.2"
+  }
+}

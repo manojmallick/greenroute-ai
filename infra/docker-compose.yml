@@ -1,0 +1,106 @@
+version: "3.9"
+
+services:
+  # ─── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: greenroute-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: greenroute
+      POSTGRES_PASSWORD: greenroute
+      POSTGRES_DB: greenroute
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/seed/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenroute"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: greenroute-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Services ────────────────────────────────────────────────────────────────
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: packages/api-gateway/Dockerfile
+    container_name: greenroute-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://greenroute:greenroute@postgres:5432/greenroute
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  router-agent:
+    build:
+      context: .
+      dockerfile: packages/router-agent/Dockerfile
+    container_name: greenroute-router
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://greenroute:greenroute@postgres:5432/greenroute
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      - redis
+
+  monitor-agent:
+    build:
+      context: .
+      dockerfile: packages/monitor-agent/Dockerfile
+    container_name: greenroute-monitor
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+
+  replanner-agent:
+    build:
+      context: .
+      dockerfile: packages/replanner-agent/Dockerfile
+    container_name: greenroute-replanner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:

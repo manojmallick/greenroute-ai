@@ -1,0 +1,19 @@
+{
+  "name": "@greenroute/monitor-agent",
+  "version": "1.0.0",
+  "description": "Traffic & anomaly detection agent (Week 2)",
+  "main": "src/agent.js",
+  "scripts": {
+    "start": "node src/agent.js",
+    "dev": "node --watch src/agent.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "dotenv": "^16.4.5",
+    "axios": "^1.7.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

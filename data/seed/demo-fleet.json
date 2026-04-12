@@ -1,0 +1,22 @@
+[
+  { "id": "VAN-001", "name": "Van Alpha",   "type": "diesel_van",   "capacity_kg": 800,  "current_lat": 52.3791, "current_lon": 4.9003, "status": "idle" },
+  { "id": "VAN-002", "name": "Van Beta",    "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3731, "current_lon": 4.8945, "status": "idle" },
+  { "id": "VAN-003", "name": "Van Gamma",   "type": "diesel_van",   "capacity_kg": 800,  "current_lat": 52.3658, "current_lon": 4.9201, "status": "idle" },
+  { "id": "VAN-004", "name": "Van Delta",   "type": "petrol_van",   "capacity_kg": 750,  "current_lat": 52.3812, "current_lon": 4.8762, "status": "idle" },
+  { "id": "VAN-005", "name": "Van Echo",    "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3545, "current_lon": 4.9012, "status": "idle" },
+  { "id": "VAN-006", "name": "Van Foxtrot", "type": "hybrid_van",   "capacity_kg": 700,  "current_lat": 52.3892, "current_lon": 4.9145, "status": "idle" },
+  { "id": "VAN-007", "name": "Van Golf",    "type": "diesel_van",   "capacity_kg": 800,  "current_lat": 52.3623, "current_lon": 4.8832, "status": "idle" },
+  { "id": "VAN-008", "name": "Van Hotel",   "type": "cargo_bike",   "capacity_kg": 100,  "current_lat": 52.3711, "current_lon": 4.8923, "status": "idle" },
+  { "id": "VAN-009", "name": "Van India",   "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3834, "current_lon": 4.9067, "status": "idle" },
+  { "id": "VAN-010", "name": "Van Juliet",  "type": "diesel_van",   "capacity_kg": 800,  "current_lat": 52.3492, "current_lon": 4.8923, "status": "idle" },
+  { "id": "VAN-011", "name": "Van Kilo",    "type": "petrol_van",   "capacity_kg": 750,  "current_lat": 52.3763, "current_lon": 4.9223, "status": "idle" },
+  { "id": "VAN-012", "name": "Van Lima",    "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3691, "current_lon": 4.8712, "status": "idle" },
+  { "id": "VAN-013", "name": "Van Mike",    "type": "hybrid_van",   "capacity_kg": 700,  "current_lat": 52.3912, "current_lon": 4.8934, "status": "idle" },
+  { "id": "VAN-014", "name": "Van November","type": "cargo_bike",   "capacity_kg": 100,  "current_lat": 52.3612, "current_lon": 4.9112, "status": "idle" },
+  { "id": "VAN-015", "name": "Van Oscar",   "type": "diesel_van",   "capacity_kg": 800,  "current_lat": 52.3784, "current_lon": 4.8845, "status": "idle" },
+  { "id": "VAN-016", "name": "Van Papa",    "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3573, "current_lon": 4.9034, "status": "idle" },
+  { "id": "VAN-017", "name": "Van Quebec",  "type": "diesel_truck", "capacity_kg": 2000, "current_lat": 52.3845, "current_lon": 4.9178, "status": "idle" },
+  { "id": "VAN-018", "name": "Van Romeo",   "type": "hybrid_van",   "capacity_kg": 700,  "current_lat": 52.3671, "current_lon": 4.8901, "status": "idle" },
+  { "id": "VAN-019", "name": "Van Sierra",  "type": "cargo_bike",   "capacity_kg": 100,  "current_lat": 52.3723, "current_lon": 4.9056, "status": "idle" },
+  { "id": "VAN-020", "name": "Van Tango",   "type": "electric_van", "capacity_kg": 600,  "current_lat": 52.3801, "current_lon": 4.8989, "status": "idle" }
+]

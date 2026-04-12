@@ -1,0 +1,28 @@
+{
+  "name": "@greenroute/router-agent",
+  "version": "1.0.0",
+  "description": "A* + Dijkstra + multi-objective route optimizer with carbon pricing",
+  "main": "src/agent.js",
+  "scripts": {
+    "start": "node src/agent.js",
+    "dev": "node --watch src/agent.js",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80
+      }
+    }
+  }
+}

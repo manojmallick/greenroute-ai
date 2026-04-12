@@ -1,0 +1,47 @@
+{
+  "source": "UK Department for Environment, Food & Rural Affairs",
+  "title": "Greenhouse Gas Reporting: Conversion Factors 2024",
+  "url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+  "currency": "kg CO2e per km",
+  "year": 2024,
+  "note": "Used as DEFRA emission factors for carbon shadow pricing in GreenRoute AI",
+  "factors": {
+    "diesel_van": {
+      "value": 0.2153,
+      "unit": "kg CO2e/km",
+      "description": "3.5t diesel van (average laden)",
+      "tableRef": "Table 5 — HGV and van emission factors"
+    },
+    "petrol_van": {
+      "value": 0.1973,
+      "unit": "kg CO2e/km",
+      "description": "3.5t petrol van (average laden)"
+    },
+    "electric_van": {
+      "value": 0.0537,
+      "unit": "kg CO2e/km",
+      "description": "3.5t electric van — UK grid average 2024 (includes upstream generation)",
+      "note": "Grid carbon intensity: 177 gCO2e/kWh (2024 National Grid ESO)"
+    },
+    "cargo_bike": {
+      "value": 0.0,
+      "unit": "kg CO2e/km",
+      "description": "Cargo bicycle — zero direct or upstream vehicle emissions"
+    },
+    "diesel_truck": {
+      "value": 0.3625,
+      "unit": "kg CO2e/km",
+      "description": "7.5t rigid diesel truck (average laden)"
+    },
+    "hybrid_van": {
+      "value": 0.1102,
+      "unit": "kg CO2e/km",
+      "description": "3.5t plug-in hybrid van (average charging pattern)"
+    }
+  },
+  "carbonShadowPrice": {
+    "value": 85,
+    "unit": "USD/tonne CO2e",
+    "source": "DEFRA 2024 recommended central carbon value, converted at 1.27 GBP/USD"
+  }
+}
