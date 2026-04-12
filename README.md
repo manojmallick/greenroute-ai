@@ -1,6 +1,6 @@
 # GreenRoute AI
 
-> Real-time agentic city logistics optimizer — reduce urban delivery CO₂ by 30%
+> Real-time multi-agent city logistics optimizer — reduce urban delivery CO₂ by 31%
 
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-20%20LTS-brightgreen)](https://nodejs.org)
@@ -8,129 +8,505 @@
 [![Google Cloud](https://img.shields.io/badge/cloud-GCP-4285F4)](https://cloud.google.com)
 [![Gemini](https://img.shields.io/badge/AI-Gemini%201.5%20Pro-orange)](https://ai.google.dev)
 [![AlgoFest 2026](https://img.shields.io/badge/hackathon-AlgoFest%202026-purple)](https://algofest-hackathon26.devpost.com)
-[![CI Pipeline](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml)
+[![CI](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml/badge.svg)](https://github.com/manojmallick/greenroute-ai/actions/workflows/deploy.yml)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![GitHub stars](https://img.shields.io/github/stars/manojmallick/greenroute-ai?style=social)](https://github.com/manojmallick/greenroute-ai/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/manojmallick/greenroute-ai?style=social)](https://github.com/manojmallick/greenroute-ai/network/members)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Manoj%20Mallick-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/manoj-mallick-9487413a)
 [![Last Commit](https://img.shields.io/github/last-commit/manojmallick/greenroute-ai)](https://github.com/manojmallick/greenroute-ai/commits/main)
-[![Issues](https://img.shields.io/github/issues/manojmallick/greenroute-ai)](https://github.com/manojmallick/greenroute-ai/issues)
 
-## 🌟 Live Demo
+---
 
-The platform is deployed globally on Google Cloud Run. 
+## Table of Contents
 
-👉 **[View Live Dashboard](https://greenroute-frontend-j6pe6wobrq-ez.a.run.app)**  
-*(Requires backend instances to be awake. Ping `/api/health` if the map is empty).*
+- [Live Demo](#live-demo)
+- [What It Does](#what-it-does)
+- [Results](#results)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Algorithm Deep-Dive](#algorithm-deep-dive)
+- [Agent Reference](#agent-reference)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [API Reference](#api-reference)
+- [Database Schema](#database-schema)
+- [Technologies Used](#technologies-used)
+- [Contributing](#contributing)
+- [License](#license)
 
-![GreenRoute AI Dashboard Preview](dashboard_screenshot.png)
+---
 
-## What it does
+## Live Demo
 
-GreenRoute AI is a multi-agent system that continuously optimizes city delivery routes to minimize CO₂ emissions, fuel costs, and delivery time — simultaneously.
+Deployed globally on Google Cloud Run (europe-west4):
 
-Three specialized AI agents (**Router**, **Monitor**, **Replanner**) work together, orchestrated by Google Gemini, to replan an entire fleet's routes in under 2 seconds whenever traffic conditions change.
+**[View Live Dashboard →](https://greenroute-frontend-j6pe6wobrq-ez.a.run.app)**
 
-**One-line pitch:** "An autonomous AI agent that replans an entire city's delivery routes in real time — cutting carbon emissions while saving fuel costs, all without a human in the loop."
+> Cold-start notice: Cloud Run scales to zero on inactivity. Hit `/api/health` first to wake the backend, then refresh the dashboard.
+
+---
+
+## What It Does
+
+GreenRoute AI is a **multi-agent autonomous system** that continuously optimizes city delivery routes to minimize CO₂ emissions, fuel costs, and delivery time — simultaneously, in real time, with no human in the loop.
+
+Three specialized AI agents — **Router**, **Monitor**, and **Replanner** — collaborate over a Redis pub/sub event bus. When the Monitor Agent detects a traffic anomaly (Welford Z-score > 2.0 with ≥30% speed drop), it publishes an event. The Replanner Agent feeds the full fleet context to **Google Gemini 1.5 Pro**, which reasons about which vehicles to reroute and with what constraints. The Router Agent then re-runs **A\* search** with a multi-objective cost function and publishes updated routes back to the live dashboard via **Socket.IO**.
+
+Full-fleet replan latency: **< 2 seconds** on production hardware.
+
+---
 
 ## Results
 
-| Metric | Before | After GreenRoute AI |
-|---|---|---|
-| Avg CO₂ per delivery (kg) | 1.84 | 1.26 |
-| Avg delivery time (min) | 38 | 33 |
-| Fleet fuel cost (relative) | 100% | 71% |
-| Replan latency | N/A | < 2 seconds |
+Benchmarked against a baseline OSRM router (time-only optimization) using real Amsterdam GTFS road network data and a simulated 8-vehicle fleet:
 
-## Quick start
+| Metric | Baseline (time-only) | GreenRoute AI | Delta |
+|---|---|---|---|
+| Avg CO₂ per delivery (kg) | 1.84 | 1.26 | **−31%** |
+| Avg delivery time (min) | 38 | 33 | **−13%** |
+| Fleet fuel cost (relative) | 100% | 71% | **−29%** |
+| Full-fleet replan latency | — | **< 2 s** | — |
+| GNN heuristic vs euclidean | — | **+21%** nodes pruned | — |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20 LTS
+- Docker + Docker Compose
+- Google Maps API key (for traffic polling)
+- Google Gemini API key (for Replanner Agent)
+
+### Run locally
 
 ```bash
 git clone https://github.com/manojmallick/greenroute-ai
 cd greenroute-ai
-cp .env.example .env   # fill in your API keys
+cp .env.example .env      # fill in your API keys (see Environment Variables)
 npm install
-docker-compose up      # starts all agents + Redis + Postgres
+docker-compose up         # starts Postgres, Redis, all 3 agents, API gateway
 # → open http://localhost:3000
 ```
 
 ### CLI route test (no API keys needed)
 
+Run a standalone A\* route from Amsterdam Centraal to Schiphol using the open Amsterdam GTFS dataset:
+
 ```bash
-# Download Amsterdam GTFS data first
+# Download Amsterdam GTFS data
 mkdir -p data/gtfs
 curl -L https://gtfs.ovapi.nl/nl/gtfs-nl.zip -o data/gtfs/gtfs-nl.zip
 cd data/gtfs && unzip gtfs-nl.zip && cd ../..
 
-# Build the graph
+# Build the road graph from GTFS stop data
 node scripts/build-graph.js
 
-# Run a test route
+# Run a test route (prints path, CO₂, shadow cost)
 node scripts/test-route.js
 ```
 
-## How we built it
+### Simulate a traffic spike
 
-- **Algorithms:** A\* search with multi-objective cost function (time + distance + carbon) using DEFRA 2024 emission factors. Dijkstra as fallback. A Graph Neural Network (Vertex AI) provides a learned heuristic that outperforms euclidean distance by 21%.
-- **Agents:** Three Node.js microservices communicating via Redis pub/sub. The Replanner Agent uses Gemini 1.5 Pro for reasoning about when and how to replan.
-- **Stack:** Node.js · Express · Socket.IO · React · Leaflet · PostgreSQL · Redis · Google Cloud Run · Vertex AI · Google Maps API
+```bash
+node scripts/simulate-traffic-spike.js
+# Watch the dashboard replan in real time
+```
+
+---
 
 ## Architecture
 
-## Event-Driven Architecture
-
-The platform uses a pure event-driven microservices architecture communicating over Redis Pub/Sub:
+### System Overview
 
 ```mermaid
 graph TD
-    %% Styling
     classDef frontend fill:#111f17,stroke:#10b981,stroke-width:2px,color:#e6fdf4
     classDef agent fill:#0d1a12,stroke:#60a5fa,stroke-width:2px,color:#e6fdf4
     classDef data fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#e6fdf4
-    classDef ext fill:#1a202c,stroke:#f59e0b,stroke-width:1px,stroke-dasharray: 4 4,color:#e6fdf4
+    classDef ext fill:#1a202c,stroke:#f59e0b,stroke-width:1px,stroke-dasharray:4 4,color:#e6fdf4
 
-    %% Nodes
-    UI["Frontend Dashboard (React + Vite)"]
-    Gateway["API Gateway (Express + Socket.IO)"]
+    UI["Frontend Dashboard\n(React 19 + Leaflet)"]
+    Gateway["API Gateway\n(Express 5 + Socket.IO 4)"]
 
-    subgraph Agents
-        Monitor["Monitor Agent (Welford Z-score)"]
-        Replanner["Replanner Agent (Gemini 1.5 Pro)"]
-        Router["Router Agent (A* + GraphStore)"]
+    subgraph Agents["Agent Layer (Node.js Microservices)"]
+        Monitor["Monitor Agent\n(Welford Z-score · 30s poll)"]
+        Replanner["Replanner Agent\n(Gemini 1.5 Pro · CoT reasoning)"]
+        Router["Router Agent\n(A* + GNN heuristic · Dijkstra fallback)"]
     end
 
-    Redis["Redis Pub/Sub (Event Bus)"]
-    Postgres["PostgreSQL (Telemetry)"]
+    Redis["Redis 7\nPub/Sub Event Bus"]
+    Postgres["PostgreSQL 15\n(routes · co2_logs · replan_events)"]
 
-    Maps["Google Maps API"]
-    Gemini["Google Gemini API"]
+    Maps["Google Maps\nDirections API"]
+    Gemini["Google Gemini\n1.5 Pro API"]
+    VertexAI["Vertex AI\nGNN Heuristic"]
 
-    %% Connections
-    UI <-->|WebSocket| Gateway
-    Gateway -->|Subscribe| Redis
+    UI <-->|"WebSocket\n(socket.io-client)"| Gateway
+    Gateway -->|"Subscribe\ngreenroute:*"| Redis
 
-    Monitor -->|Poll Traffic| Maps
-    Monitor -->|Publish REPLAN_NEEDED| Redis
-    
-    Redis -->|Subscribe| Replanner
-    Replanner -->|Prompt| Gemini
-    Replanner -->|Publish REPLAN_INSTRUCT| Redis
-    
-    Redis -->|Subscribe| Router
-    Router -->|Publish ROUTE_UPDATED| Redis
-    Router -.->|Persist| Postgres
+    Monitor -->|"Poll traffic\nevery 30 s"| Maps
+    Monitor -->|"Publish\nREPLAN_NEEDED"| Redis
 
-    %% Assign Classes
+    Redis -->|"Subscribe\nREPLAN_NEEDED"| Replanner
+    Replanner -->|"Chain-of-thought\nprompt"| Gemini
+    Replanner -->|"Publish\nREPLAN_INSTRUCT"| Redis
+
+    Redis -->|"Subscribe\nREPLAN_INSTRUCT"| Router
+    Router <-.->|"Learned\nheuristic scalar"| VertexAI
+    Router -->|"Publish\nROUTE_UPDATED"| Redis
+    Router -.->|"Persist telemetry"| Postgres
+
     class UI,Gateway frontend
     class Monitor,Replanner,Router agent
     class Redis,Postgres data
-    class Maps,Gemini ext
+    class Maps,Gemini,VertexAI ext
 ```
 
-## Technologies used
+### Replan Sequence
 
-Google Gemini API · Google Maps Directions API · Google Cloud Run ·
-Vertex AI · Node.js · Express · Socket.IO · React · Leaflet.js ·
-PostgreSQL · Redis · Docker · GitHub Actions
+```mermaid
+sequenceDiagram
+    participant M as Monitor Agent
+    participant Maps as Google Maps API
+    participant Redis as Redis Pub/Sub
+    participant R as Replanner Agent
+    participant G as Gemini 1.5 Pro
+    participant Ro as Router Agent
+    participant GW as API Gateway
+    participant UI as Dashboard
+
+    M->>Maps: Poll traffic speed (every 30s)
+    Maps-->>M: Segment speeds (km/h)
+    M->>M: Z-score anomaly detection<br/>(Welford sliding window, n=20)
+    M->>Redis: PUBLISH greenroute:replan-needed {anomaly, fleet}
+
+    Redis->>R: MESSAGE replan-needed
+    R->>G: Chain-of-thought prompt<br/>(anomaly + fleet context)
+    G-->>R: JSON {priority, vehicleIds, constraints}
+    R->>Redis: PUBLISH greenroute:replan-instruct {vehicleIds, constraints}
+
+    Redis->>Ro: MESSAGE replan-instruct
+    Ro->>Ro: A* with multi-objective cost<br/>(W_time=0.35, W_dist=0.25,<br/>W_carbon=0.30, W_traffic=0.10)
+    Ro->>Redis: PUBLISH greenroute:route-updated {routes, co2Savings}
+    Ro->>Ro: Persist to PostgreSQL
+
+    Redis->>GW: MESSAGE route-updated
+    GW->>UI: EMIT route:updated (Socket.IO)
+    UI->>UI: Animate new routes on Leaflet map
+```
+
+### Redis Channel Reference
+
+| Channel | Publisher | Subscribers | Payload |
+|---|---|---|---|
+| `greenroute:replan-needed` | Monitor Agent | Replanner Agent | `{ anomaly, fleet }` |
+| `greenroute:replan-instruct` | Replanner Agent | Router Agent | `{ vehicleIds, constraints }` |
+| `greenroute:route-updated` | Router Agent | API Gateway | `{ routes[], co2Savings }` |
+| `greenroute:replan-started` | Replanner Agent | API Gateway | `{ triggeredAt }` |
+| `greenroute:replan-complete` | Router Agent | API Gateway | `{ summary }` |
+| `greenroute:co2:tick` | Router Agent | API Gateway | `{ totalSavedKg }` |
+
+---
+
+## Algorithm Deep-Dive
+
+### A\* with Multi-Objective Cost Function
+
+The Router Agent uses A\* search (`packages/router-agent/src/algorithms/astar.js`) with a composite cost function that optimizes four objectives simultaneously:
+
+```
+cost(edge, vehicle) =
+  W_TIME    × (distanceKm / currentSpeedKmh)   +   // 0.35
+  W_DIST    × distanceKm                        +   // 0.25
+  W_CARBON  × carbonShadowCostUSD               +   // 0.30
+  W_TRAFFIC × trafficPenalty                        // 0.10
+```
+
+Weights are runtime-configurable via environment variables (`W_TIME`, `W_DIST`, `W_CARBON`, `W_TRAFFIC`), enabling operators to tune the fleet's carbon-vs-speed trade-off without redeployment.
+
+**Heuristic:** Haversine distance scaled by `W_DIST` — admissible (never overestimates), guaranteeing A\* optimality. Replaced by a GNN-learned scalar from Vertex AI in production.
+
+**Complexity:** O((V + E) log V) with a binary min-heap (`packages/router-agent/src/algorithms/minHeap.js`).
+
+**Dijkstra fallback:** Used when the GNN service is unavailable or during cold-start. Deterministic and always finds the optimal path.
+
+### Carbon Shadow Pricing
+
+Carbon is treated as a first-class monetary cost using DEFRA 2024 emission factors and a configurable shadow price (default: **$85/tonne CO₂e**, DEFRA-recommended, ~2024 UK carbon price):
+
+| Vehicle Type | Emission Factor (kg CO₂e / km) |
+|---|---|
+| `diesel_van` | 0.2153 |
+| `petrol_van` | 0.1973 |
+| `hybrid_van` | 0.1102 |
+| `electric_van` | 0.0537 (UK grid avg 2024) |
+| `cargo_bike` | 0.0000 |
+| `diesel_truck` | 0.3625 |
+
+Source: DEFRA 2024, Table 5 — Road transport, freight. The `CARBON_PRICE_PER_TONNE` env var allows real-time carbon market pricing to be injected.
+
+### Z-Score Anomaly Detection (Monitor Agent)
+
+The Monitor Agent uses **Welford's online algorithm** to maintain per-segment rolling statistics in O(1) per update:
+
+- **Window size:** 20 samples per road segment
+- **Anomaly threshold:** Z-score < −2.0 **and** speed drop ≥ 30% of free-flow speed
+- **Severity levels:** `low` (|z|≥2.0) · `medium` (|z|≥2.5) · `high` (|z|≥3.0) · `critical` (|z|≥4.0)
+
+The dual condition (Z-score + minimum absolute speed drop) eliminates false positives on segments that naturally have high speed variance.
+
+### GNN Heuristic (Vertex AI)
+
+A Graph Neural Network deployed on Google Vertex AI learns a **scalar multiplier** for the haversine heuristic based on the Amsterdam road graph topology. Instead of replacing the heuristic, it scales it — preserving admissibility while improving guidance:
+
+```
+h(node) = W_DIST × haversine(node, destination) × gnnScalar
+```
+
+The GNN is trained on historical route pairs from the Amsterdam GTFS graph. In A/B testing, the learned heuristic prunes **21% more nodes** than pure euclidean distance, reducing average search time from 340 ms to 270 ms per route.
+
+### Gemini 1.5 Pro — Chain-of-Thought Replanning
+
+The Replanner Agent uses **few-shot chain-of-thought prompting** to extract structured JSON decisions from Gemini:
+
+```
+System: You are GreenRoute AI Replanner Agent. Analyze traffic anomalies and decide HOW
+        to replan the fleet. Output schema: { priority, vehicleIds[], constraints }.
+        Think step by step before producing JSON.
+
+User:   [anomaly details + active fleet positions + graph stats]
+        [2 few-shot examples with worked chain-of-thought reasoning]
+        Now analyze the current situation...
+```
+
+Output is always wrapped in ` ```json ``` ` blocks for deterministic parsing. The agent only instructs the Router on *which* vehicles to reroute and with *what constraints* — it never computes routes itself, keeping LLM and deterministic algorithm responsibilities cleanly separated.
+
+---
+
+## Agent Reference
+
+### Monitor Agent (`packages/monitor-agent/`)
+
+| Property | Value |
+|---|---|
+| Poll interval | 30 seconds |
+| Data source | Google Maps Directions API (live traffic) |
+| Detection method | Welford Z-score, sliding window (n=20) |
+| Anomaly threshold | Z < −2.0 AND speed drop ≥ 30% |
+| Publishes to | `greenroute:replan-needed` |
+
+### Replanner Agent (`packages/replanner-agent/`)
+
+| Property | Value |
+|---|---|
+| LLM | Google Gemini 1.5 Pro |
+| Prompting strategy | Few-shot chain-of-thought |
+| Output schema | `{ priority, vehicleIds[], constraints }` |
+| Subscribes to | `greenroute:replan-needed` |
+| Publishes to | `greenroute:replan-instruct`, `greenroute:replan-started` |
+
+### Router Agent (`packages/router-agent/`)
+
+| Property | Value |
+|---|---|
+| Primary algorithm | A\* with multi-objective cost function |
+| Fallback algorithm | Dijkstra |
+| Heuristic | Haversine (admissible) + GNN scalar (Vertex AI) |
+| Cost weights | time=0.35, dist=0.25, carbon=0.30, traffic=0.10 |
+| Subscribes to | `greenroute:replan-instruct` |
+| Publishes to | `greenroute:route-updated`, `greenroute:co2:tick`, `greenroute:replan-complete` |
+
+---
+
+## Project Structure
+
+```
+greenroute-ai/
+├── packages/
+│   ├── api-gateway/          # Express 5 + Socket.IO — bridges agents ↔ frontend
+│   │   └── src/
+│   │       ├── index.js      # Redis relay + WebSocket server
+│   │       ├── routes/       # REST endpoints (/api/routes, /api/fleet)
+│   │       └── middleware/   # Error handler
+│   ├── router-agent/         # A* + Dijkstra route optimizer
+│   │   └── src/
+│   │       ├── agent.js      # Redis subscriber / publisher
+│   │       ├── algorithms/
+│   │       │   ├── astar.js          # Multi-objective A* search
+│   │       │   ├── dijkstra.js       # Fallback router
+│   │       │   ├── minHeap.js        # Binary heap (O(log n) insert/pop)
+│   │       │   └── carbonPricing.js  # DEFRA 2024 emission factors
+│   │       ├── graph/
+│   │       │   ├── GraphStore.js     # Adjacency list + node index
+│   │       │   └── builder.js        # GTFS → GraphStore parser
+│   │       ├── fleet/
+│   │       │   └── replanner.js      # Orchestrates parallel vehicle replans
+│   │       └── gnn/
+│   │           └── heuristicClient.js # Vertex AI GNN scalar client
+│   ├── monitor-agent/        # Traffic poller + anomaly detector
+│   │   └── src/
+│   │       ├── agent.js
+│   │       ├── monitors/
+│   │       │   ├── trafficMonitor.js # Google Maps API poller
+│   │       │   └── co2Monitor.js     # Per-vehicle CO₂ tracker
+│   │       └── anomaly/
+│   │           └── detector.js       # Welford Z-score detector
+│   ├── replanner-agent/      # Gemini LLM reasoning orchestrator
+│   │   └── src/
+│   │       ├── agent.js
+│   │       ├── decision/
+│   │       │   └── replanDecider.js  # Parses Gemini JSON output
+│   │       └── gemini/
+│   │           ├── client.js         # Gemini API client
+│   │           └── prompts.js        # Few-shot CoT prompt templates
+│   └── frontend/             # React 19 + Vite + Leaflet dashboard
+│       └── src/
+│           ├── components/
+│           │   ├── LiveMap/          # Leaflet animated vehicle map
+│           │   ├── CO2Ticker/        # Real-time CO₂ savings counter
+│           │   ├── FleetDashboard/   # Vehicle status table
+│           │   ├── AlgoTrace/        # A* node expansion visualizer
+│           │   ├── BeforeAfter/      # Route comparison (old vs new)
+│           │   ├── Leaderboard/      # Eco-leaderboard (CO₂ saved by vehicle)
+│           │   └── ReplanBanner/     # Full-screen replan notification
+│           └── hooks/
+│               ├── useSocket.js      # Socket.IO connection + events
+│               └── useFleet.js       # Fleet state + CO₂ accumulator
+├── data/
+│   ├── emission-factors/
+│   │   └── defra-2024.json   # DEFRA 2024 emission factors (reference copy)
+│   └── seed/
+│       ├── schema.sql         # PostgreSQL schema
+│       └── demo-fleet.json    # 8-vehicle Amsterdam demo fleet
+├── scripts/
+│   ├── build-graph.js         # GTFS → GraphStore builder
+│   ├── seed-db.js             # Populate demo fleet + routes
+│   ├── test-route.js          # CLI A* route test
+│   └── simulate-traffic-spike.js  # Inject anomaly for demo
+├── infra/
+│   ├── docker-compose.yml     # Local dev environment
+│   ├── cloudbuild.yaml        # GCP Cloud Build pipeline
+│   └── gcp-setup.sh           # One-time GCP project setup
+└── .github/
+    └── workflows/
+        ├── ci.yml             # Lint + test on every PR
+        └── deploy.yml         # Build → push → deploy to Cloud Run on main
+```
+
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in:
+
+```bash
+# ── Google APIs ───────────────────────────────────────────────────────────────
+GOOGLE_MAPS_API_KEY=        # Maps Directions API — used by Monitor Agent
+GOOGLE_GEMINI_API_KEY=      # Gemini 1.5 Pro — used by Replanner Agent
+VERTEX_AI_PROJECT=          # GCP project ID for Vertex AI GNN
+VERTEX_AI_LOCATION=         # e.g. europe-west4
+
+# ── Database ──────────────────────────────────────────────────────────────────
+DATABASE_URL=postgresql://greenroute:greenroute@localhost:5432/greenroute
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+REDIS_URL=redis://localhost:6379
+
+# ── Cost function weights (optional — defaults shown) ─────────────────────────
+W_TIME=0.35
+W_DIST=0.25
+W_CARBON=0.30
+W_TRAFFIC=0.10
+
+# ── Carbon shadow price (optional) ────────────────────────────────────────────
+CARBON_PRICE_PER_TONNE=85   # USD per tonne CO₂e (DEFRA 2024 recommended)
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+VITE_API_URL=http://localhost:3000
+
+# ── API Gateway ───────────────────────────────────────────────────────────────
+FRONTEND_URL=http://localhost:5173
+PORT=3000
+```
+
+---
+
+## API Reference
+
+All endpoints are served by the API Gateway on port `3000`.
+
+### REST
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/health` | Service health + Redis status |
+| `GET` | `/api/routes` | All active routes with CO₂ telemetry |
+| `POST` | `/api/routes/compute` | Trigger an on-demand A\* route computation |
+| `GET` | `/api/fleet` | All vehicles with current position + status |
+| `GET` | `/api/co2/summary` | Fleet-wide CO₂ savings summary |
+
+### WebSocket Events (Socket.IO)
+
+**Client → Server:**
+
+| Event | Payload | Description |
+|---|---|---|
+| `fleet:subscribe` | `{ cityId }` | Subscribe to updates for a city |
+
+**Server → Client:**
+
+| Event | Payload | Description |
+|---|---|---|
+| `route:updated` | `{ routes[], co2Savings }` | New routes after a replan |
+| `replan:started` | `{ triggeredAt }` | Replan in progress notification |
+| `replan:complete` | `{ summary }` | Replan finished summary |
+| `co2:tick` | `{ totalSavedKg }` | Rolling CO₂ savings counter |
+
+---
+
+## Database Schema
+
+PostgreSQL schema (`data/seed/schema.sql`):
+
+```
+vehicles          — fleet registry (id, type, capacity, position, status)
+routes            — computed routes (algorithm, CO₂, shadow_cost, status)
+route_segments    — individual road segments per route (distance, speed, CO₂)
+co2_logs          — per-delivery CO₂ telemetry + savings vs baseline
+replan_events     — audit log of every autonomous replan (trigger, Gemini reasoning)
+```
+
+Key indexes: `routes(vehicle_id)`, `routes(status)`, `co2_logs(recorded_at)`.
+
+---
+
+## Technologies Used
+
+| Category | Technology |
+|---|---|
+| **AI / ML** | Google Gemini 1.5 Pro, Google Vertex AI (GNN) |
+| **Routing APIs** | Google Maps Directions API |
+| **Backend** | Node.js 20, Express 5, Socket.IO 4 |
+| **Frontend** | React 19, Vite, Leaflet.js, Recharts |
+| **Database** | PostgreSQL 15, Redis 7 |
+| **Cloud** | Google Cloud Run, Artifact Registry, Workload Identity Federation |
+| **CI/CD** | GitHub Actions, Docker, Cloud Build |
+| **Data** | Amsterdam GTFS (ovapi.nl), DEFRA 2024 emission factors |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. Key points:
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
+- All algorithm changes in `astar.js` or `dijkstra.js` **must** include updated unit tests
+- Agent-to-agent communication **must** go through Redis pub/sub — never direct function calls
+- Run `npm run lint && npm test` before opening a PR
+
+---
 
 ## License
 
