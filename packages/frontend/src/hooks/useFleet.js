@@ -120,12 +120,23 @@ export function useFleet() {
   /**
    * Trigger a full fleet replan via the API.
    */
-  const triggerReplan = useCallback(async (segment) => {
+  const triggerReplan = useCallback(async (cityId = 'ams') => {
+    // Map city IDs to default segments
+    const segmentByCity = {
+      ams: 'AMS-CS→AMS-DAM',
+      ber: 'BER-HBF→BER-ZOO',
+      lon: 'LON-KX→LON-LHR',
+    };
+
     try {
       const res = await fetch(`${API_URL}/api/fleet/replan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'manual_demo', segment }),
+        body: JSON.stringify({
+          reason: 'manual_demo',
+          city: cityId,
+          segment: segmentByCity[cityId] || segmentByCity.ams
+        }),
       });
 
       if (!res.ok) {

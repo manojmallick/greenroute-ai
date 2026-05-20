@@ -106,7 +106,7 @@ export default function App() {
   const handleTriggerReplan = async () => {
     setReplanTriggering(true);
     try {
-      await triggerReplan();
+      await triggerReplan(selectedCity);
     } catch (err) {
       console.error('Replan trigger failed:', err);
     } finally {

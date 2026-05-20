@@ -129,10 +129,17 @@ router.post('/fleet/replan', async (req, res, next) => {
       });
     }
 
-    const { reason = 'manual_trigger', segment } = req.body;
+    const { reason = 'manual_trigger', segment, city = 'ams' } = req.body;
 
-    // Use specific segment if provided, else default to demo segment
-    const targetSegment = segment || 'AMS-CS→AMS-DAM';
+    // Map city to default segment if not provided
+    const segmentByCity = {
+      ams: 'AMS-CS→AMS-DAM',
+      ber: 'BER-HBF→BER-ZOO',
+      lon: 'LON-KX→LON-LHR',
+    };
+
+    // Use specific segment if provided, else use city-default segment
+    const targetSegment = segment || segmentByCity[city] || 'AMS-CS→AMS-DAM';
 
     // Publish a simulated anomaly to trigger the full chain
     const anomaly = {
