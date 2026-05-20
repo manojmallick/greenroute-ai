@@ -12,6 +12,44 @@ import ReplanBanner from './components/ReplanBanner/ReplanBanner';
 import Leaderboard from './components/Leaderboard/Leaderboard';
 import { useFleet } from './hooks/useFleet';
 
+const CITY_INFO = {
+  ams: { name: 'Amsterdam, NL', flag: '🇳🇱', vehicles: 8, routes: 156, co2Kg: 423.8 },
+  ber: { name: 'Berlin, DE', flag: '🇩🇪', vehicles: 6, routes: 112, co2Kg: 378.5 },
+  lon: { name: 'London, UK', flag: '🇬🇧', vehicles: 9, routes: 189, co2Kg: 512.3 },
+};
+
+const FLEET_BY_CITY = {
+  ams: [
+    { id: 'VAN-001', name: 'Van Alpha', type: 'diesel_van', lat: 52.3791, lon: 4.9003, cityId: 'ams' },
+    { id: 'VAN-002', name: 'Van Beta', type: 'electric_van', lat: 52.3731, lon: 4.8945, cityId: 'ams' },
+    { id: 'VAN-003', name: 'Van Gamma', type: 'diesel_van', lat: 52.3658, lon: 4.9201, cityId: 'ams' },
+    { id: 'VAN-004', name: 'Van Delta', type: 'petrol_van', lat: 52.3812, lon: 4.8762, cityId: 'ams' },
+    { id: 'VAN-005', name: 'Van Echo', type: 'electric_van', lat: 52.3545, lon: 4.9012, cityId: 'ams' },
+    { id: 'VAN-006', name: 'Van Foxtrot', type: 'hybrid_van', lat: 52.3892, lon: 4.9145, cityId: 'ams' },
+    { id: 'VAN-007', name: 'Van Golf', type: 'diesel_van', lat: 52.3623, lon: 4.8832, cityId: 'ams' },
+    { id: 'VAN-008', name: 'Van Hotel', type: 'cargo_bike', lat: 52.3711, lon: 4.8923, cityId: 'ams' },
+  ],
+  ber: [
+    { id: 'VAN-B01', name: 'Van Berlin Alpha', type: 'diesel_van', lat: 52.5200, lon: 13.4050, cityId: 'ber' },
+    { id: 'VAN-B02', name: 'Van Berlin Beta', type: 'electric_van', lat: 52.5170, lon: 13.3880, cityId: 'ber' },
+    { id: 'VAN-B03', name: 'Van Berlin Gamma', type: 'hybrid_van', lat: 52.5140, lon: 13.4200, cityId: 'ber' },
+    { id: 'VAN-B04', name: 'Van Berlin Delta', type: 'diesel_van', lat: 52.5300, lon: 13.4000, cityId: 'ber' },
+    { id: 'VAN-B05', name: 'Van Berlin Echo', type: 'electric_van', lat: 52.5050, lon: 13.3950, cityId: 'ber' },
+    { id: 'VAN-B06', name: 'Van Berlin Foxtrot', type: 'petrol_van', lat: 52.5250, lon: 13.4150, cityId: 'ber' },
+  ],
+  lon: [
+    { id: 'VAN-L01', name: 'Van London Alpha', type: 'diesel_van', lat: 51.5074, lon: -0.1278, cityId: 'lon' },
+    { id: 'VAN-L02', name: 'Van London Beta', type: 'electric_van', lat: 51.5150, lon: -0.1200, cityId: 'lon' },
+    { id: 'VAN-L03', name: 'Van London Gamma', type: 'diesel_truck', lat: 51.5000, lon: -0.1350, cityId: 'lon' },
+    { id: 'VAN-L04', name: 'Van London Delta', type: 'hybrid_van', lat: 51.5200, lon: -0.1100, cityId: 'lon' },
+    { id: 'VAN-L05', name: 'Van London Echo', type: 'electric_van', lat: 51.4950, lon: -0.1400, cityId: 'lon' },
+    { id: 'VAN-L06', name: 'Van London Foxtrot', type: 'diesel_van', lat: 51.5100, lon: -0.1000, cityId: 'lon' },
+    { id: 'VAN-L07', name: 'Van London Golf', type: 'cargo_bike', lat: 51.5250, lon: -0.1350, cityId: 'lon' },
+    { id: 'VAN-L08', name: 'Van London Hotel', type: 'hybrid_van', lat: 51.5050, lon: -0.1150, cityId: 'lon' },
+    { id: 'VAN-L09', name: 'Van London India', type: 'electric_van', lat: 51.5300, lon: -0.1250, cityId: 'lon' },
+  ],
+};
+
 const DEMO_STOPS = [
   { id: 'AMS-CS',  label: 'Amsterdam Centraal' },
   { id: 'AMS-DAM', label: 'Dam Square' },
@@ -43,6 +81,10 @@ export default function App() {
   const [optimizing, setOptimizing] = useState(false);
   const [replanTriggering, setReplanTriggering] = useState(false);
   const [routeError, setRouteError] = useState(null);
+
+  // Filter vehicles based on selected city
+  const cityVehicles = FLEET_BY_CITY[selectedCity] || FLEET_BY_CITY.ams;
+  const cityInfo = CITY_INFO[selectedCity] || CITY_INFO.ams;
 
   const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId);
   const selectedRoute = selectedVehicleId ? routes[selectedVehicleId] : null;
@@ -117,10 +159,11 @@ export default function App() {
 
       {/* ── Live Map ────────────────────────────────────────────────── */}
       <LiveMap
-        vehicles={vehicles}
+        vehicles={cityVehicles}
         routes={routes}
         selectedVehicleId={selectedVehicleId}
         selectedCity={selectedCity}
+        cityInfo={cityInfo}
         onVehicleClick={setSelectedVehicleId}
         onSegmentClick={triggerReplan}
       />
@@ -150,7 +193,7 @@ export default function App() {
 
         {/* Fleet Dashboard */}
         <FleetDashboard
-          vehicles={vehicles}
+          vehicles={cityVehicles}
           routes={routes}
           selectedVehicleId={selectedVehicleId}
           onSelect={setSelectedVehicleId}

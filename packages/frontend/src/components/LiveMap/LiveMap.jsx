@@ -26,7 +26,7 @@ const CITY_BOUNDS = {
   lon: { north: 51.7321, south: 51.2671, east: 0.3524, west: -0.4897 },
 };
 
-export default function LiveMap({ vehicles, routes, selectedVehicleId, selectedCity, onVehicleClick, onSegmentClick }) {
+export default function LiveMap({ vehicles, routes, selectedVehicleId, selectedCity, cityInfo, onVehicleClick, onSegmentClick }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -200,7 +200,7 @@ export default function LiveMap({ vehicles, routes, selectedVehicleId, selectedC
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
       <div className="map-overlay-tl">
-        <div className="map-badge">📍 Amsterdam, NL</div>
+        <div className="map-badge">📍 {cityInfo?.name || 'Amsterdam, NL'}</div>
         <div className="map-badge">{vehicles.length} vehicles active</div>
         {routedCount > 0 && (
           <div className="map-badge" style={{ color: 'var(--color-green-400)' }}>
