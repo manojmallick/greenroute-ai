@@ -3,7 +3,8 @@
  * and updates the shared graph.
  *
  * In development (no GOOGLE_MAPS_API_KEY), runs in simulation mode:
- *   - Simulates random traffic spikes on random segments
+ *   - Uses city-specific traffic patterns (rush hours, weekends, events)
+ *   - Realistic traffic variation by city topology
  *   - Makes the demo self-contained without requiring API keys
  *
  * In production, calls:
@@ -17,6 +18,7 @@
 
 const { EventEmitter } = require('events');
 const { AnomalyDetector } = require('../anomaly/detector');
+const { simulateSpeed, shouldTriggerSpike, generateTrafficSpike } = require('../cities/trafficSimulator');
 
 const POLL_INTERVAL_MS = parseInt(process.env.MONITOR_POLL_INTERVAL_MS ?? '30000', 10);
 const MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -33,20 +35,22 @@ class TrafficMonitor extends EventEmitter {
   /**
    * @param {import('../../../router-agent/src/graph/GraphStore').GraphStore} graph
    * @param {object} [options]
+   * @param {string} [options.cityId] - 'ams', 'ber', 'lon' for city-specific patterns
    * @param {number} [options.pollIntervalMs]
    */
   constructor(graph, options = {}) {
     super();
     this._graph = graph;
+    this._cityId = options.cityId ?? 'ams';
     this._pollIntervalMs = options.pollIntervalMs ?? POLL_INTERVAL_MS;
     this._detector = new AnomalyDetector({ windowSize: 20, zThreshold: 2.0 });
     this._timer = null;
     this._pollCount = 0;
 
     if (SIM_MODE) {
-      console.log('[traffic-monitor] 🔶 Simulation mode (set GOOGLE_MAPS_API_KEY for live data)');
+      console.log(`[traffic-monitor] 🔶 Simulation mode for ${this._cityId.toUpperCase()} (set GOOGLE_MAPS_API_KEY for live data)`);
     } else {
-      console.log('[traffic-monitor] ✅ Live mode — using Google Maps API');
+      console.log(`[traffic-monitor] ✅ Live mode for ${this._cityId.toUpperCase()} — using Google Maps API`);
     }
   }
 
@@ -91,8 +95,10 @@ class TrafficMonitor extends EventEmitter {
   }
 
   /**
-   * Simulation mode: generate realistic traffic variation with occasional spikes.
-   * Every ~10th poll, inject a severe traffic event on one segment.
+   * Simulation mode: generate city-specific realistic traffic patterns.
+   * - Rush hour slowdowns by city
+   * - Weekend multipliers
+   * - Probabilistic traffic spikes
    */
   _simulateTraffic() {
     const nodes = this._graph.allNodes();
@@ -110,19 +116,20 @@ class TrafficMonitor extends EventEmitter {
       const edge = edges[Math.floor(Math.random() * edges.length)];
       const freeFlow = edge.freeFlowSpeedKmh;
 
-      // Normal variation: ±20% of free-flow speed
-      let speedKmh = freeFlow * (0.8 + Math.random() * 0.4);
+      // Use city-specific traffic simulation
+      let speedKmh = simulateSpeed(this._cityId, freeFlow);
 
-      // Every 8th poll: inject a spike on one random segment (simulates incident)
-      if (this._pollCount % 8 === 0 && i === 0) {
-        speedKmh = freeFlow * (0.1 + Math.random() * 0.2); // 10-30% of free-flow
-        console.log(`[traffic-monitor] 🚨 Simulating traffic spike on ${fromNode.id}→${edge.to}`);
+      // Probabilistic traffic spike (city-dependent)
+      if (shouldTriggerSpike(this._cityId)) {
+        const spike = generateTrafficSpike(this._cityId);
+        speedKmh = freeFlow * ((100 - spike.speedDropPercent) / 100);
+        console.log(`[traffic-monitor] 🚨 ${spike.severity.toUpperCase()} congestion at ${spike.locationName} (${this._cityId.toUpperCase()})`);
       }
 
       updates.push({
         fromId: fromNode.id,
         toId: edge.to,
-        speedKmh: Math.max(1, Math.round(speedKmh)),
+        speedKmh: Math.max(1, speedKmh),
         freeFlowSpeedKmh: freeFlow,
       });
     }

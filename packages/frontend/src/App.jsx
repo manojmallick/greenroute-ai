@@ -3,6 +3,8 @@ import './index.css';
 
 import LiveMap from './components/LiveMap/LiveMap';
 import CO2Ticker from './components/CO2Ticker/CO2Ticker';
+import CitySelector from './components/CitySelector/CitySelector';
+import MultiCityComparison from './components/MultiCityComparison/MultiCityComparison';
 import FleetDashboard from './components/FleetDashboard/FleetDashboard';
 import AlgoTrace from './components/AlgoTrace/AlgoTrace';
 import BeforeAfter from './components/BeforeAfter/BeforeAfter';
@@ -24,6 +26,7 @@ const DEMO_STOPS = [
 ];
 
 export default function App() {
+  const [selectedCity, setSelectedCity] = useState('ams');
   const {
     vehicles,
     selectedVehicleId,
@@ -137,6 +140,10 @@ export default function App() {
 
         {/* CO₂ Ticker */}
         <CO2Ticker co2Stats={co2Stats} totalSavedOverride={totalSavedKg > 0 ? totalSavedKg : undefined} />
+
+        {/* City Selector & Multi-City Comparison */}
+        <CitySelector selectedCity={selectedCity} onCityChange={setSelectedCity} />
+        <MultiCityComparison />
 
         {/* Fleet Dashboard */}
         <FleetDashboard

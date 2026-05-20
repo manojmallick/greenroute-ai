@@ -1,0 +1,126 @@
+.city-selector {
+  background: linear-gradient(135deg, #1a4d2e 0%, #0f3d24 100%);
+  border-radius: 12px;
+  padding: 16px;
+  color: #e6fdf4;
+  border: 1px solid #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.city-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.city-selector-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.city-badge {
+  background: rgba(16, 185, 129, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.city-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.city-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  background: rgba(15, 61, 36, 0.5);
+  color: #e6fdf4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.city-btn:hover {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  transform: translateY(-2px);
+}
+
+.city-btn.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.city-flag {
+  font-size: 1.4rem;
+}
+
+.city-name {
+  font-weight: 600;
+}
+
+.city-count {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.city-info {
+  background: rgba(15, 61, 36, 0.8);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row .label {
+  color: rgba(230, 253, 244, 0.7);
+  font-weight: 500;
+}
+
+.info-row .value {
+  color: #10b981;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .city-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .city-btn {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px;
+  }
+
+  .city-flag {
+    font-size: 1.2rem;
+  }
+}

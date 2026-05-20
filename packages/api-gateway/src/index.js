@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const Redis = require('ioredis');
 
 const routeRouter = require('./routes/route');
+const carbonRouter = require('./routes/carbon');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -105,6 +106,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api', routeRouter);
+app.use('/api', carbonRouter);
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
