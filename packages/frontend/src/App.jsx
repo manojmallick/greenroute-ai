@@ -76,7 +76,7 @@ export default function App() {
     optimizeRoute,
     triggerReplan,
     connected,
-  } = useFleet();
+  } = useFleet(selectedCity);
 
   const [optimizing, setOptimizing] = useState(false);
   const [replanTriggering, setReplanTriggering] = useState(false);

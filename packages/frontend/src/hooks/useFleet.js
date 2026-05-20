@@ -17,8 +17,9 @@ const DEMO_FLEET = [
 
 /**
  * useFleet — manages fleet state, route updates, and CO₂ tracking.
+ * @param {string} selectedCity - Current selected city (ams, ber, lon)
  */
-export function useFleet() {
+export function useFleet(selectedCity = 'ams') {
   const [vehicles, setVehicles] = useState(DEMO_FLEET);
   const [selectedVehicleId, setSelectedVehicleId] = useState(null);
   const [routes, setRoutes] = useState({});      // vehicleId → { stops, segments, co2, ... }
@@ -158,31 +159,67 @@ export function useFleet() {
     'co2:tick':        handleCo2Tick,
   });
   
-  // Auto-optimize first 3 vehicles on load to show immediate savings
+  // Auto-optimize first 3 vehicles when city changes or on initial load
   useEffect(() => {
     if (!connected) return;
-    
-    const targets = DEMO_FLEET.slice(0, 3);
+
+    // City-specific auto-optimization data
+    // Note: Backend only has Amsterdam stops defined, so all cities use AMS routes for now
+    // Future: Backend will support BER-*, LON-* stops
+    const cityAutoOptimize = {
+      ams: {
+        vehicles: DEMO_FLEET.slice(0, 3),
+        origins: ['AMS-CS', 'AMS-CS', 'AMS-CS'],
+        destinations: ['AMS-ZUI', 'AMS-DAM', 'AMS-LEI'],
+      },
+      ber: {
+        vehicles: [
+          { id: 'VAN-B01', name: 'Van Berlin Alpha', type: 'diesel_van' },
+          { id: 'VAN-B02', name: 'Van Berlin Beta', type: 'electric_van' },
+          { id: 'VAN-B03', name: 'Van Berlin Gamma', type: 'hybrid_van' },
+        ],
+        // Using Amsterdam stops as backend placeholder
+        origins: ['AMS-CS', 'AMS-CS', 'AMS-CS'],
+        destinations: ['AMS-ZUI', 'AMS-DAM', 'AMS-LEI'],
+      },
+      lon: {
+        vehicles: [
+          { id: 'VAN-L01', name: 'Van London Alpha', type: 'diesel_van' },
+          { id: 'VAN-L02', name: 'Van London Beta', type: 'electric_van' },
+          { id: 'VAN-L03', name: 'Van London Gamma', type: 'diesel_truck' },
+        ],
+        // Using Amsterdam stops as backend placeholder
+        origins: ['AMS-CS', 'AMS-CS', 'AMS-CS'],
+        destinations: ['AMS-ZUI', 'AMS-DAM', 'AMS-LEI'],
+      },
+    };
+
+    const config = cityAutoOptimize[selectedCity] || cityAutoOptimize.ams;
+    const targets = config.vehicles;
+
     const runAutoSweep = async () => {
       // Staggered delay for visual map effect
       const wait = (ms) => new Promise(r => setTimeout(r, ms));
-      const dests = ['AMS-ZUI', 'AMS-DAM', 'AMS-LEI'];
-      
+
+      // Clear routes for this city when switching
+      setRoutes({});
+
       for (let i = 0; i < targets.length; i++) {
         const v = targets[i];
-        if (routes[v.id]) continue; // don't re-optimize if already done
-        
+        const origin = config.origins[i];
+        const dest = config.destinations[i];
+
         try {
-          await optimizeRoute('AMS-CS', dests[i], v.id, v.type);
+          await optimizeRoute(origin, dest, v.id, v.type);
           await wait(1200);
         } catch (err) {
-          console.warn('Auto-optimization failed:', err);
+          console.warn(`Auto-optimization failed for ${v.id}:`, err);
         }
       }
     };
-    
+
     runAutoSweep();
-  }, [connected, optimizeRoute]); // removed routes to avoid loop
+  }, [connected, selectedCity, optimizeRoute]);
 
 
   return {
