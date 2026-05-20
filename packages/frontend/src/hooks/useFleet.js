@@ -201,19 +201,18 @@ export function useFleet(selectedCity = 'ams') {
       // Staggered delay for visual map effect
       const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-      // Clear routes for this city when switching
-      setRoutes({});
-
       for (let i = 0; i < targets.length; i++) {
         const v = targets[i];
         const origin = config.origins[i];
         const dest = config.destinations[i];
 
         try {
-          await optimizeRoute(origin, dest, v.id, v.type);
+          console.log(`[useFleet] Optimizing ${v.id}: ${origin} → ${dest}`);
+          const result = await optimizeRoute(origin, dest, v.id, v.type);
+          console.log(`[useFleet] Success: ${v.id} has ${result.stops?.length ?? 0} stops`);
           await wait(1200);
         } catch (err) {
-          console.warn(`Auto-optimization failed for ${v.id}:`, err);
+          console.error(`[useFleet] Auto-optimization failed for ${v.id}:`, err.message || err);
         }
       }
     };
