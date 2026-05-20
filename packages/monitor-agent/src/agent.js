@@ -80,7 +80,7 @@ async function main() {
 
   let redis;
   try {
-    redis = new Redis(REDIS_URL, { lazyConnect: true, enableOfflineQueue: false });
+    redis = new Redis(REDIS_URL, { lazyConnect: true });
     await redis.connect();
     console.log(`[monitor-agent] ✅ Redis connected: ${REDIS_URL}`);
   } catch (err) {
