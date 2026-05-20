@@ -6,6 +6,10 @@
   color: #f3f4f6;
   max-height: 380px;
   overflow-y: auto;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .comparison-header {
