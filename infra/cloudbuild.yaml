@@ -64,7 +64,7 @@ steps:
       - -f
       - packages/frontend/Dockerfile
       - --build-arg
-      - VITE_API_URL=https://api-gateway-${_CLOUD_RUN_SUFFIX}
+      - VITE_API_URL=https://greenroute-api-gateway-${_CLOUD_RUN_SUFFIX}
       - .
     waitFor: ['-']
 
