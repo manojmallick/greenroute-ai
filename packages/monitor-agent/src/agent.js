@@ -131,12 +131,16 @@ async function main() {
     );
   });
 
-  // Subscribe to route updates from Router Agent to feed co2Monitor
+  // Subscribe to replan needs and route updates
   if (redis) {
     const subscriber = redis.duplicate();
-    await subscriber.subscribe('greenroute:route-updated');
+    await subscriber.subscribe('greenroute:replan-needed', 'greenroute:route-updated');
     subscriber.on('message', (channel, message) => {
-      if (channel === 'greenroute:route-updated') {
+      if (channel === 'greenroute:replan-needed') {
+        const data = JSON.parse(message);
+        console.log(`[monitor-agent] 🔄 Replan triggered: ${data.anomaly?.segmentKey || 'manual'}`);
+        // Forward to Replanner Agent (already published to Redis pub/sub)
+      } else if (channel === 'greenroute:route-updated') {
         const data = JSON.parse(message);
         if (data.vehicleId && data.vehicleType) {
           co2Monitor.updateVehicle(
