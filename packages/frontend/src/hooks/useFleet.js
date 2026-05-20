@@ -121,12 +121,23 @@ export function useFleet() {
    * Trigger a full fleet replan via the API.
    */
   const triggerReplan = useCallback(async (segment) => {
-    const res = await fetch(`${API_URL}/api/fleet/replan`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason: 'manual_demo', segment }),
-    });
-    return res.json();
+    try {
+      const res = await fetch(`${API_URL}/api/fleet/replan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'manual_demo', segment }),
+      });
+
+      if (!res.ok) {
+        console.warn(`[useFleet] Replan API returned ${res.status}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error('[useFleet] Replan trigger error:', err);
+      return { error: err.message, status: 'error' };
+    }
   }, []);
 
   const { connected } = useSocket({

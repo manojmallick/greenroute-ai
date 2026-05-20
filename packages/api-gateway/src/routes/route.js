@@ -121,7 +121,12 @@ router.post('/fleet/replan', async (req, res, next) => {
   try {
     const redisPub = req.app.get('redisPub');
     if (!redisPub) {
-      return res.status(503).json({ error: 'Redis not connected — cannot trigger agent replan' });
+      console.warn('[api-gateway] Redis not available for replan');
+      return res.status(503).json({
+        error: 'Redis not connected',
+        message: 'Running in demo mode without full agent coordination',
+        status: 'ok_demo',
+      });
     }
 
     const { reason = 'manual_trigger', segment } = req.body;
