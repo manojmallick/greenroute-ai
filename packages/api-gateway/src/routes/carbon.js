@@ -128,7 +128,7 @@ router.get('/carbon/cities', async (req, res) => {
         totalCities: 3,
         totalVehiclesOptimized: allCities.reduce((sum, c) => sum + c.vehiclesOptimized, 0),
         totalRoutesOptimized: allCities.reduce((sum, c) => sum + c.routesOptimized, 0),
-        totalCO2SavedKg,
+        totalCO2Kg,
         estimatedAnnualTonnes: totalAnnualTonnes,
         carbonCreditsValueUSD: (totalCO2Kg / 1000) * 85,
         topCity: 'london',

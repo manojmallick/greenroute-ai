@@ -11,7 +11,7 @@
 
 'use strict';
 
-const { quantifyCarbonSavings, generateEquivalencies } = require('../../router-agent/src/algorithms/carbonQuantification');
+const { quantifyCarbonSavings, generateEquivalencies } = require('@greenroute/router-agent/src/algorithms/carbonQuantification');
 
 /**
  * Generate a carbon certificate object
