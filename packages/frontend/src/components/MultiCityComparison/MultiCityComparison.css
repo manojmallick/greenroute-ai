@@ -1,9 +1,11 @@
 .multi-city-comparison {
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid #3b82f6;
   color: #f3f4f6;
+  max-height: 380px;
+  overflow-y: auto;
 }
 
 .comparison-header {
@@ -34,15 +36,15 @@
 .city-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .city-card {
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 10px;
-  padding: 12px;
+  padding: 10px;
   transition: all 0.3s ease;
 }
 
