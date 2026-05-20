@@ -58,26 +58,6 @@ export default function CitySelector({ selectedCity, onCityChange }) {
         ))}
       </div>
 
-      {city && (
-        <div className="city-info">
-          <div className="info-row">
-            <span className="label">Routes Optimized:</span>
-            <span className="value">{city.routes}</span>
-          </div>
-          <div className="info-row">
-            <span className="label">Vehicles Active:</span>
-            <span className="value">{city.vehicles}</span>
-          </div>
-          <div className="info-row">
-            <span className="label">CO₂ Saved:</span>
-            <span className="value">{city.co2SavedKg.toFixed(1)} kg</span>
-          </div>
-          <div className="info-row">
-            <span className="label">Traffic Pattern:</span>
-            <span className="value" style={{ fontSize: '0.85rem' }}>{city.trafficPattern}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -79,36 +79,6 @@
   opacity: 0.8;
 }
 
-.city-info {
-  background: rgba(15, 61, 36, 0.8);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 8px;
-  padding: 10px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 0.8rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-row .label {
-  color: rgba(230, 253, 244, 0.7);
-  font-weight: 500;
-}
-
-.info-row .value {
-  color: #10b981;
-  font-weight: 600;
-}
-
 @media (max-width: 768px) {
   .city-buttons {
     grid-template-columns: 1fr;
