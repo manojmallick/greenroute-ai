@@ -120,6 +120,7 @@ export default function App() {
         vehicles={vehicles}
         routes={routes}
         selectedVehicleId={selectedVehicleId}
+        selectedCity={selectedCity}
         onVehicleClick={setSelectedVehicleId}
         onSegmentClick={triggerReplan}
       />
@@ -141,9 +142,11 @@ export default function App() {
         {/* CO₂ Ticker */}
         <CO2Ticker co2Stats={co2Stats} totalSavedOverride={totalSavedKg > 0 ? totalSavedKg : undefined} />
 
-        {/* City Selector & Multi-City Comparison */}
-        <CitySelector selectedCity={selectedCity} onCityChange={setSelectedCity} />
+        {/* Multi-City Comparison (FIRST so it's visible) */}
         <MultiCityComparison />
+
+        {/* City Selector */}
+        <CitySelector selectedCity={selectedCity} onCityChange={setSelectedCity} />
 
         {/* Fleet Dashboard */}
         <FleetDashboard

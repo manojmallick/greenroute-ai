@@ -20,7 +20,13 @@ const ROUTE_COLORS = [
   '#34d399', '#f87171', '#38bdf8', '#fbbf24',
 ];
 
-export default function LiveMap({ vehicles, routes, selectedVehicleId, onVehicleClick, onSegmentClick }) {
+const CITY_BOUNDS = {
+  ams: { north: 52.4262, south: 52.2645, east: 5.0913, west: 4.7319 },
+  ber: { north: 52.6755, south: 52.3384, east: 13.7661, west: 13.0885 },
+  lon: { north: 51.7321, south: 51.2671, east: 0.3524, west: -0.4897 },
+};
+
+export default function LiveMap({ vehicles, routes, selectedVehicleId, selectedCity, onVehicleClick, onSegmentClick }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -48,6 +54,19 @@ export default function LiveMap({ vehicles, routes, selectedVehicleId, onVehicle
       mapRef.current = null;
     };
   }, []);
+
+  // Pan/zoom map when city changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedCity || !CITY_BOUNDS[selectedCity]) return;
+
+    const bounds = CITY_BOUNDS[selectedCity];
+    const leafletBounds = L.latLngBounds(
+      [bounds.south, bounds.west],
+      [bounds.north, bounds.east]
+    );
+    map.fitBounds(leafletBounds, { padding: [50, 50] });
+  }, [selectedCity]);
 
   // Sync vehicle markers
   useEffect(() => {
