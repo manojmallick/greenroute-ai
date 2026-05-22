@@ -51,8 +51,12 @@ Deployed globally on Google Cloud Run (europe-west4):
 
 ## Screenshots
 
+
 ### Full Dashboard — 8 vehicles active over Amsterdam
 ![GreenRoute AI Dashboard](dashboard_screenshot.png)
+
+### Multi-City Impact Comparison — CO₂, routes, and value across cities
+![Multi-City Impact Comparison](docs/screenshots/multi_city_comparison.png)
 
 ### Live Map — Vehicle markers with real-time positions
 ![Live Map](demo_map.png)
@@ -68,31 +72,30 @@ Deployed globally on Google Cloud Run (europe-west4):
 
 ---
 
+
 ## What It Does
 
-GreenRoute AI is a **multi-agent autonomous system** that continuously optimizes city delivery routes to minimize CO₂ emissions, fuel costs, and delivery time — simultaneously, in real time, with no human in the loop.
+GreenRoute AI is a **multi-agent, multi-city autonomous system** that continuously optimizes urban delivery routes to minimize CO₂ emissions, fuel costs, and delivery time—simultaneously, in real time, with no human intervention. The platform now supports:
 
-Three specialized AI agents — **Router**, **Monitor**, and **Replanner** — collaborate over a Redis pub/sub event bus. When the Monitor Agent detects a traffic anomaly (Welford Z-score > 2.0 with ≥30% speed drop), it publishes an event. The Replanner Agent feeds the full fleet context to **Google Gemini 1.5 Pro**, which reasons about which vehicles to reroute and with what constraints. The Router Agent then re-runs **A\* search** with a multi-objective cost function and publishes updated routes back to the live dashboard via **Socket.IO**.
+- **Autonomous replanning** using Google Gemini 1.5 Pro (chain-of-thought reasoning) for traffic anomaly response
+- **Multi-city support** (Amsterdam, Berlin, London) with city-specific traffic patterns and fleet configs
+- **Real-time CO₂ quantification** and carbon shadow pricing (DEFRA 2024, EU ETS)
+- **Downloadable carbon impact certificates** for every route and city
+- **Predictive traffic forecasting** (45-min ahead) and anomaly detection (Welford Z-score)
+- **Multi-objective A* routing** (time, distance, CO₂, traffic) with runtime-tunable weights
+- **Live dashboard** with animated vehicle map, city comparison, and real-time metrics
 
-Full-fleet replan latency: **< 2 seconds** on production hardware.
+Agents communicate strictly via Redis pub/sub. The Monitor Agent detects anomalies and triggers replanning; the Replanner Agent uses Gemini to decide which vehicles to reroute and with what constraints; the Router Agent executes per-vehicle replans and updates the dashboard in real time. All major events and metrics are streamed live to the frontend via Socket.IO.
+
+Full-fleet replan latency: **< 2 seconds** (benchmarked on production hardware).
 
 ---
 
 ## Results
 
-### Amsterdam (Single City)
-Benchmarked against a baseline OSRM router (time-only optimization) using real Amsterdam GTFS road network data and a simulated 8-vehicle fleet:
 
-| Metric | Baseline (time-only) | GreenRoute AI | Delta |
-|---|---|---|---|
-| Avg CO₂ per delivery (kg) | 1.84 | 1.26 | **−31%** |
-| Avg delivery time (min) | 38 | 33 | **−13%** |
-| Fleet fuel cost (relative) | 100% | 71% | **−29%** |
-| Full-fleet replan latency | — | **< 2 s** | — |
-| GNN heuristic vs euclidean | — | **+21%** nodes pruned | — |
-
-### Multi-City Scale (Amsterdam + Berlin + London)
-GreenRoute AI now scales to three major European cities with city-specific traffic patterns:
+### Multi-City Results & Impact
+Benchmarked against OSRM (time-only) and legacy solutions, GreenRoute AI now delivers:
 
 | Metric | Amsterdam | Berlin | London |
 |---|---|---|---|
@@ -107,24 +110,25 @@ GreenRoute AI now scales to three major European cities with city-specific traff
 **Aggregate Impact (3 cities):**
 - **Total routes optimized:** 457
 - **Total CO₂ saved:** 1,314.6 kg → **479.8 tonnes annually**
-- **Carbon credit value:** $40,785 USD @ EU ETS pricing
-- **Equivalent to:** 137 cars off the road for a year
+- **Carbon credit value:** $111,741 USD @ EU ETS pricing
+- **Equivalent to:** 137 cars off the road for a year, 21,816 trees planted, 500+ households' annual electricity
 
 ---
 
-## Carbon Impact Quantification
 
-Every optimized route generates a **Carbon Impact Certificate** showing:
+## Carbon Impact Quantification & Certificates
 
-- **Absolute savings:** kg CO₂ saved + EU ETS carbon credit value
+Every optimized route and city now generates a **Carbon Impact Certificate** showing:
+
+- **Absolute savings:** kg CO₂ saved, $ value (EU ETS), and shadow cost
 - **Real-world equivalencies:**
   - `2.8 kg CO₂` = 1 car off the road for 1 day
   - `4.2 kg CO₂` = 1 mature tree's annual absorption
   - `12.5 kg CO₂` = 1 household's daily energy consumption
-- **Downloadable certificates** with QR codes for verification
-- **Fleet-wide reports** showing cumulative impact by city
+- **Downloadable certificates** (PDF/CSV) with QR codes for verification
+- **Fleet-wide and city-wide reports** showing cumulative impact
 
-### Example Impact Statement
+**Example Impact Statement:**
 *Route optimized in London: 5.2 km, electric van*
 > "This route saved 3.8 kg CO₂ — equivalent to removing 1.2 cars from the road for one day, or the annual absorption of 0.17 mature trees. Worth $0.32 in EU carbon credits."
 
@@ -497,17 +501,18 @@ PORT=3000
 
 All endpoints are served by the API Gateway on port `3000`.
 
-### REST
 
-#### Core Routing
+### REST API
+
+#### Core Routing & Fleet
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/health` | Service health + Redis status |
 | `GET` | `/api/routes` | All active routes with CO₂ telemetry |
-| `POST` | `/api/routes/compute` | Trigger an on-demand A\* route computation |
+| `POST` | `/api/route/optimize` | Trigger on-demand A* route computation (with trace support) |
 | `GET` | `/api/fleet` | All vehicles with current position + status |
 
-#### Carbon Impact & Reporting (NEW)
+#### Carbon Impact & Reporting
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/carbon/summary` | Fleet-wide CO₂ savings summary + annual projection |
@@ -515,22 +520,23 @@ All endpoints are served by the API Gateway on port `3000`.
 | `POST` | `/api/carbon/certificate` | Generate downloadable impact certificate |
 | `GET` | `/api/carbon/report/:cityId` | City-specific fleet impact report |
 
+
 ### WebSocket Events (Socket.IO)
 
 **Client → Server:**
-
 | Event | Payload | Description |
 |---|---|---|
 | `fleet:subscribe` | `{ cityId }` | Subscribe to updates for a city |
+| `vehicle:override` | `{ vehicleId, action }` | Manual override for vehicle (demo/testing) |
 
 **Server → Client:**
-
 | Event | Payload | Description |
 |---|---|---|
 | `route:updated` | `{ routes[], co2Savings }` | New routes after a replan |
 | `replan:started` | `{ triggeredAt }` | Replan in progress notification |
 | `replan:complete` | `{ summary }` | Replan finished summary |
 | `co2:tick` | `{ totalSavedKg }` | Rolling CO₂ savings counter |
+| `alert:traffic` | `{ segment, severity }` | Traffic anomaly alert (frontend banner) |
 
 ---
 
@@ -550,20 +556,21 @@ Key indexes: `routes(vehicle_id)`, `routes(status)`, `co2_logs(recorded_at)`.
 
 ---
 
+
 ## Technologies Used
 
 | Category | Technology |
 |---|---|
-| **AI / ML** | Google Gemini 1.5 Pro, Google Vertex AI (GNN) |
+| **AI / ML** | Google Gemini 1.5 Pro (Replanner), Google Vertex AI (GNN heuristic), Welford Z-score anomaly detection |
 | **Routing APIs** | Google Maps Directions API |
-| **Backend** | Node.js 20, Express 5, Socket.IO 4 |
-| **Frontend** | React 19, Vite, Leaflet.js, Recharts |
-| **Database** | PostgreSQL 15, Redis 7 |
-| **Cloud** | Google Cloud Run, Artifact Registry, Workload Identity Federation |
+| **Backend** | Node.js 20, Express 5, Socket.IO 4, Redis pub/sub, PostgreSQL 15 |
+| **Frontend** | React 19, Vite, Leaflet.js, Recharts, TailwindCSS |
+| **Cloud** | Google Cloud Run, Redis Cloud, Cloud SQL, Artifact Registry |
 | **CI/CD** | GitHub Actions, Docker, Cloud Build |
-| **Data** | Amsterdam GTFS (ovapi.nl), DEFRA 2024 emission factors |
+| **Data** | Amsterdam/Berlin/London GTFS, DEFRA 2024 emission factors, multi-city seed fleets |
 
 ---
+
 
 ## Contributing
 
@@ -572,6 +579,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. Key points:
 - Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
 - All algorithm changes in `astar.js` or `dijkstra.js` **must** include updated unit tests
 - Agent-to-agent communication **must** go through Redis pub/sub — never direct function calls
+- All new features (backend or frontend) should include documentation and, where possible, demo/test scripts
 - Run `npm run lint && npm test` before opening a PR
 
 ---

@@ -21,8 +21,9 @@
 ### Opening (0:00-0:10) — 10 seconds
 
 **Visual:** Show browser with GreenRoute AI dashboard
+
 **Audio:** 
-> "GreenRoute AI is a multi-agent autonomous system that optimizes delivery routes for carbon, not just time. Watch what happens when we optimize the same delivery across three European cities."
+> "GreenRoute AI is a multi-agent, multi-city autonomous system that optimizes delivery routes for carbon, not just time. Now featuring Gemini-powered replanning, downloadable carbon certificates, and a real-time dashboard across three European cities. Watch what happens when we optimize the same delivery across Amsterdam, Berlin, and London."
 
 **Action:**
 - Show full dashboard with Amsterdam vehicles + map
@@ -78,7 +79,9 @@
    - 189 routes  
    - 512.3 kg CO₂
    - "Very Heavy traffic (7-10h, 16-20h)"
+
 4. Notice London has the highest CO₂ savings (because algorithm worked hardest)
+5. Optionally, show the Download Certificate button and demonstrate downloading a carbon impact certificate (PDF/CSV) for a route or city.
 
 ---
 
@@ -105,8 +108,9 @@
 ### Closing (1:30-2:00) — 30 seconds
 
 **Visual:** Show the full dashboard with all components
+
 **Audio:**
-> "Every route gets a carbon impact certificate with exact savings. The algorithm is autonomous, replanning in under 2 seconds when traffic anomalies hit. All three cities, same algorithm, different results — that's what we mean by scalable, algorithmic excellence for sustainable logistics."
+> "Every route gets a downloadable carbon impact certificate with exact savings and monetary value. The algorithm is fully autonomous, replanning in under 2 seconds using Gemini LLM when traffic anomalies hit. All three cities, same algorithm, different results — that's what we mean by scalable, algorithmic excellence for sustainable logistics."
 
 **Action:**
 1. Take a final screenshot of the complete dashboard
@@ -142,6 +146,7 @@
 3. **Close-up** of each city card in MultiCityComparison
 4. **Close-up** of the aggregate metrics
 5. **Full view** of the CO₂ Ticker
+6. **Certificate download**: Show the Download Certificate button and the resulting PDF/CSV
 
 ---
 
@@ -209,6 +214,9 @@ If components don't show:
 - [ ] MultiCityComparison shows correct data for each city
 - [ ] Aggregate metrics are visible and correct
 - [ ] CO₂ Ticker displays and updates smoothly
+- [ ] Downloadable carbon certificate (PDF/CSV) is demonstrated
+- [ ] Gemini-powered replanning is visible (ReplanBanner or event)
+- [ ] Real-time metrics and API endpoints are highlighted
 - [ ] Video is clear and audible
 - [ ] Total runtime is 2 minutes
 - [ ] File is exported in MP4 format
